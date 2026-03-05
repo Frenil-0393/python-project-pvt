@@ -1,0 +1,29 @@
+{% extends 'shared/base.html' %}
+{% block content %}
+<h2>Fan - Live Scores</h2>
+<h3>Live Matches</h3>
+<ul>
+{% for match in live_matches %}
+    <li>{{ match.sport }}: {{ match.home_team }} vs {{ match.away_team }} ({{ match.venue }})</li>
+{% empty %}
+    <li>No live matches now.</li>
+{% endfor %}
+</ul>
+
+<h3>Latest Score Updates</h3>
+<table>
+    <thead><tr><th>Match</th><th>Summary</th><th>Status</th><th>Time</th></tr></thead>
+    <tbody>
+    {% for item in updates %}
+        <tr>
+            <td>{{ item.match.home_team }} vs {{ item.match.away_team }}</td>
+            <td>{{ item.summary }}</td>
+            <td>{{ item.status_note }}</td>
+            <td>{{ item.created_at }}</td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="4">No updates yet.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

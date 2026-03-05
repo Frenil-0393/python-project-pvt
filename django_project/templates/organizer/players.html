@@ -1,0 +1,43 @@
+{% extends 'shared/base.html' %}
+{% block content %}
+<h2>Organizer - Player Stats</h2>
+<form method="post" class="card">
+    {% csrf_token %}
+    <label>Match</label>
+    <select name="match_id" required>
+        <option value="">Select match</option>
+        {% for match in matches %}
+        <option value="{{ match.id }}">{{ match.sport }}: {{ match.home_team }} vs {{ match.away_team }}</option>
+        {% endfor %}
+    </select>
+    <label>Player Name</label>
+    <input name="player_name" type="text" required>
+    <label>Team Name</label>
+    <input name="team_name" type="text" required>
+    <label>Metric Name</label>
+    <input name="metric_name" type="text" placeholder="Runs / Goals / Wickets" required>
+    <label>Metric Value</label>
+    <input name="metric_value" type="text" required>
+    <label>Availability</label>
+    <input name="availability" type="text" value="Available">
+    <button type="submit">Save Player Stat</button>
+</form>
+
+<h3>Stats</h3>
+<table>
+    <thead><tr><th>Player</th><th>Team</th><th>Metric</th><th>Value</th><th>Availability</th></tr></thead>
+    <tbody>
+    {% for item in player_stats %}
+        <tr>
+            <td>{{ item.player_name }}</td>
+            <td>{{ item.team_name }}</td>
+            <td>{{ item.metric_name }}</td>
+            <td>{{ item.metric_value }}</td>
+            <td>{{ item.availability }}</td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="5">No player stats yet.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

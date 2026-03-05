@@ -1,0 +1,40 @@
+{% extends 'shared/base.html' %}
+{% load static %}
+{% block content %}
+<h2>Create Account</h2>
+<form method="post" action="{% url 'register' %}" class="card">
+    {% csrf_token %}
+    {% if form.errors %}
+        <div class="message error">
+            Please fix the errors below and try again.
+        </div>
+    {% endif %}
+    {{ form.non_field_errors }}
+
+    <label>Username</label>
+    {{ form.username }}
+    {{ form.username.errors }}
+
+    <label>Full Name</label>
+    {{ form.full_name }}
+    {{ form.full_name.errors }}
+
+    <label>Email</label>
+    {{ form.email }}
+    {{ form.email.errors }}
+
+    <label>User Role</label>
+    {{ form.role }}
+    {{ form.role.errors }}
+
+    <label>Password</label>
+    {{ form.password1 }}
+    {{ form.password1.errors }}
+
+    <label>Confirm Password</label>
+    {{ form.password2 }}
+    {{ form.password2.errors }}
+
+    <button type="submit">Register</button>
+</form>
+{% endblock %}

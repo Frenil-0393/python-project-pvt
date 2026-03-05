@@ -1,0 +1,36 @@
+{% extends 'shared/base.html' %}
+{% block content %}
+<h2>Media - Press Room</h2>
+<form method="post" class="card">
+    {% csrf_token %}
+    <label>Sport</label>
+    <input name="sport" type="text" required>
+    <label>Headline</label>
+    <input name="headline" type="text" required>
+    <label>Body</label>
+    <textarea name="body" rows="4" required></textarea>
+    <label>Status</label>
+    <select name="status">
+        <option value="draft">Draft</option>
+        <option value="published">Published</option>
+    </select>
+    <button type="submit">Save Press Release</button>
+</form>
+
+<h3>Press Releases</h3>
+<table>
+    <thead><tr><th>Sport</th><th>Headline</th><th>Status</th><th>Created</th></tr></thead>
+    <tbody>
+    {% for item in press_releases %}
+        <tr>
+            <td>{{ item.sport }}</td>
+            <td>{{ item.headline }}</td>
+            <td>{{ item.get_status_display }}</td>
+            <td>{{ item.created_at }}</td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="4">No press releases yet.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

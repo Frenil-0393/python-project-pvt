@@ -1,0 +1,91 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f6f8;
+    color: #1d2a35;
+}
+
+.topbar {
+    background: #0f172a;
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 18px;
+}
+
+.topbar a {
+    color: #fff;
+    text-decoration: none;
+    margin-left: 12px;
+}
+
+.container {
+    max-width: 760px;
+    margin: 24px auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.card {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+input, select, button {
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+}
+
+textarea {
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-family: Arial, sans-serif;
+}
+
+button {
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+.message.error {
+    color: #b91c1c;
+}
+
+.errorlist {
+    color: #b91c1c;
+    margin: 6px 0 0;
+    padding-left: 16px;
+}
+
+.message.success {
+    color: #15803d;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    margin-top: 10px;
+}
+
+th,
+td {
+    border: 1px solid #e5e7eb;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background: #f8fafc;
+}
+
+a {
+    color: #1d4ed8;
+}

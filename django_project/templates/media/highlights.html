@@ -1,0 +1,38 @@
+{% extends 'shared/base.html' %}
+{% block content %}
+<h2>Media - Highlights Manager</h2>
+<form method="post" class="card">
+    {% csrf_token %}
+    <label>Match</label>
+    <select name="match_id" required>
+        <option value="">Select match</option>
+        {% for match in matches %}
+        <option value="{{ match.id }}">{{ match.sport }}: {{ match.home_team }} vs {{ match.away_team }}</option>
+        {% endfor %}
+    </select>
+    <label>Title</label>
+    <input name="title" type="text" required>
+    <label>Description</label>
+    <input name="description" type="text">
+    <label>Duration</label>
+    <input name="duration" type="text" placeholder="05:20">
+    <button type="submit">Publish Highlight</button>
+</form>
+
+<h3>Published Highlights</h3>
+<table>
+    <thead><tr><th>Title</th><th>Match</th><th>Duration</th><th>Published</th></tr></thead>
+    <tbody>
+    {% for item in highlights %}
+        <tr>
+            <td>{{ item.title }}</td>
+            <td>{{ item.match.home_team }} vs {{ item.match.away_team }}</td>
+            <td>{{ item.duration }}</td>
+            <td>{{ item.published_at }}</td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="4">No highlights yet.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

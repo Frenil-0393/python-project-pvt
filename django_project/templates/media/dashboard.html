@@ -1,0 +1,10 @@
+{% extends 'shared/base.html' %}
+{% block content %}
+<h2>Media Dashboard</h2>
+<p>Welcome, {{ user_name }}.</p>
+<ul>
+    <li><a href="{% url 'media:broadcast' %}">Broadcast Hub</a></li>
+    <li><a href="{% url 'media:highlights' %}">Highlight Manager</a></li>
+    <li><a href="{% url 'media:press' %}">Press Room</a></li>
+</ul>
+{% endblock %}

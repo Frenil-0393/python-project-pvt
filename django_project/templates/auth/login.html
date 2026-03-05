@@ -1,0 +1,22 @@
+{% extends 'shared/base.html' %}
+{% load static %}
+{% block content %}
+<h2>System Login</h2>
+<form method="post" action="{% url 'login' %}" class="card">
+    {% csrf_token %}
+    <label>Username</label>
+    <input name="username" type="text" required>
+
+    <label>Password</label>
+    <input name="password" type="password" required>
+
+    <label>Select Role</label>
+    <select name="role" required>
+        <option value="fan">Sport Fan</option>
+        <option value="organizer">Organizer</option>
+        <option value="media">Media & Broadcast</option>
+    </select>
+
+    <button type="submit">Login</button>
+</form>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends 'shared/base.html' %}
+{% block content %}
+<h2>Fan - Highlights</h2>
+<table>
+    <thead><tr><th>Title</th><th>Match</th><th>Duration</th><th>Views</th></tr></thead>
+    <tbody>
+    {% for item in highlights %}
+        <tr>
+            <td>{{ item.title }}</td>
+            <td>{{ item.match.home_team }} vs {{ item.match.away_team }}</td>
+            <td>{{ item.duration }}</td>
+            <td>{{ item.views }}</td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="4">No highlights published.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
