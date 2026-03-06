@@ -1,6 +1,11 @@
 {% extends 'shared/base.html' %}
 {% block content %}
 <h2>Fan - Match Timetable</h2>
+<form method="get" class="card">
+    <label>Filter by Sport</label>
+    <input name="sport" type="text" value="{{ sport }}" placeholder="e.g. Football">
+    <button type="submit">Apply Filter</button>
+</form>
 <table>
     <thead><tr><th>Date/Time</th><th>Sport</th><th>Fixture</th><th>Venue</th><th>Status</th></tr></thead>
     <tbody>

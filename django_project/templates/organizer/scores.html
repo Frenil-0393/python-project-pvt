@@ -19,7 +19,7 @@
 
 <h3>Recent Updates</h3>
 <table>
-    <thead><tr><th>Match</th><th>Summary</th><th>Status</th><th>Time</th></tr></thead>
+    <thead><tr><th>Match</th><th>Summary</th><th>Status</th><th>Time</th><th>Action</th></tr></thead>
     <tbody>
     {% for item in score_updates %}
         <tr>
@@ -27,9 +27,17 @@
             <td>{{ item.summary }}</td>
             <td>{{ item.status_note }}</td>
             <td>{{ item.created_at }}</td>
+            <td>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="delete">
+                    <input type="hidden" name="update_id" value="{{ item.id }}">
+                    <button type="submit">Delete</button>
+                </form>
+            </td>
         </tr>
     {% empty %}
-        <tr><td colspan="4">No score updates yet.</td></tr>
+        <tr><td colspan="5">No score updates yet.</td></tr>
     {% endfor %}
     </tbody>
 </table>

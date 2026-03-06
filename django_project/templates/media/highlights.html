@@ -21,7 +21,7 @@
 
 <h3>Published Highlights</h3>
 <table>
-    <thead><tr><th>Title</th><th>Match</th><th>Duration</th><th>Published</th></tr></thead>
+    <thead><tr><th>Title</th><th>Match</th><th>Duration</th><th>Published</th><th>Action</th></tr></thead>
     <tbody>
     {% for item in highlights %}
         <tr>
@@ -29,9 +29,17 @@
             <td>{{ item.match.home_team }} vs {{ item.match.away_team }}</td>
             <td>{{ item.duration }}</td>
             <td>{{ item.published_at }}</td>
+            <td>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="delete">
+                    <input type="hidden" name="highlight_id" value="{{ item.id }}">
+                    <button type="submit">Delete</button>
+                </form>
+            </td>
         </tr>
     {% empty %}
-        <tr><td colspan="4">No highlights yet.</td></tr>
+        <tr><td colspan="5">No highlights yet.</td></tr>
     {% endfor %}
     </tbody>
 </table>

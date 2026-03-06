@@ -25,7 +25,7 @@
 
 <h3>Stats</h3>
 <table>
-    <thead><tr><th>Player</th><th>Team</th><th>Metric</th><th>Value</th><th>Availability</th></tr></thead>
+    <thead><tr><th>Player</th><th>Team</th><th>Metric</th><th>Value</th><th>Availability</th><th>Action</th></tr></thead>
     <tbody>
     {% for item in player_stats %}
         <tr>
@@ -34,9 +34,17 @@
             <td>{{ item.metric_name }}</td>
             <td>{{ item.metric_value }}</td>
             <td>{{ item.availability }}</td>
+            <td>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="delete">
+                    <input type="hidden" name="stat_id" value="{{ item.id }}">
+                    <button type="submit">Delete</button>
+                </form>
+            </td>
         </tr>
     {% empty %}
-        <tr><td colspan="5">No player stats yet.</td></tr>
+        <tr><td colspan="6">No player stats yet.</td></tr>
     {% endfor %}
     </tbody>
 </table>

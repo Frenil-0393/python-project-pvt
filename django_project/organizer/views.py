@@ -14,6 +14,16 @@ def dashboard(request):
 @role_required("organizer")
 def schedule_view(request):
 	if request.method == "POST":
+		action = request.POST.get("action", "create")
+		if action == "delete":
+			match_id = request.POST.get("match_id")
+			deleted, _ = Match.objects.filter(id=match_id).delete()
+			if deleted:
+				messages.success(request, "Match deleted.")
+			else:
+				messages.error(request, "Match not found.")
+			return redirect("organizer:schedule")
+
 		sport = request.POST.get("sport", "").strip()
 		home_team = request.POST.get("home_team", "").strip()
 		away_team = request.POST.get("away_team", "").strip()
@@ -49,6 +59,16 @@ def schedule_view(request):
 @role_required("organizer")
 def scores_view(request):
 	if request.method == "POST":
+		action = request.POST.get("action", "create")
+		if action == "delete":
+			update_id = request.POST.get("update_id")
+			deleted, _ = ScoreUpdate.objects.filter(id=update_id).delete()
+			if deleted:
+				messages.success(request, "Score update deleted.")
+			else:
+				messages.error(request, "Score update not found.")
+			return redirect("organizer:scores")
+
 		match_id = request.POST.get("match_id")
 		summary = request.POST.get("summary", "").strip()
 		status_note = request.POST.get("status_note", "").strip()
@@ -86,6 +106,16 @@ def scores_view(request):
 @role_required("organizer")
 def players_view(request):
 	if request.method == "POST":
+		action = request.POST.get("action", "create")
+		if action == "delete":
+			stat_id = request.POST.get("stat_id")
+			deleted, _ = PlayerStat.objects.filter(id=stat_id).delete()
+			if deleted:
+				messages.success(request, "Player stat deleted.")
+			else:
+				messages.error(request, "Player stat not found.")
+			return redirect("organizer:players")
+
 		match_id = request.POST.get("match_id")
 		player_name = request.POST.get("player_name", "").strip()
 		team_name = request.POST.get("team_name", "").strip()

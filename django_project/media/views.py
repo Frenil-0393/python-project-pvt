@@ -14,6 +14,18 @@ def dashboard(request):
 @role_required("media")
 def broadcast_view(request):
 	if request.method == "POST":
+		action = request.POST.get("action", "create")
+		if action == "toggle":
+			broadcast_id = request.POST.get("broadcast_id")
+			item = BroadcastSession.objects.filter(id=broadcast_id).first()
+			if not item:
+				messages.error(request, "Broadcast not found.")
+			else:
+				item.is_live = not item.is_live
+				item.save(update_fields=["is_live", "updated_at"])
+				messages.success(request, "Broadcast live status updated.")
+			return redirect("media:broadcast")
+
 		match_id = request.POST.get("match_id")
 		channel_name = request.POST.get("channel_name", "").strip()
 		stream_url = request.POST.get("stream_url", "").strip()
@@ -41,6 +53,16 @@ def broadcast_view(request):
 @role_required("media")
 def highlights_view(request):
 	if request.method == "POST":
+		action = request.POST.get("action", "create")
+		if action == "delete":
+			highlight_id = request.POST.get("highlight_id")
+			deleted, _ = Highlight.objects.filter(id=highlight_id).delete()
+			if deleted:
+				messages.success(request, "Highlight deleted.")
+			else:
+				messages.error(request, "Highlight not found.")
+			return redirect("media:highlights")
+
 		match_id = request.POST.get("match_id")
 		title = request.POST.get("title", "").strip()
 		description = request.POST.get("description", "").strip()
@@ -68,6 +90,16 @@ def highlights_view(request):
 @role_required("media")
 def press_view(request):
 	if request.method == "POST":
+		action = request.POST.get("action", "create")
+		if action == "delete":
+			press_id = request.POST.get("press_id")
+			deleted, _ = PressRelease.objects.filter(id=press_id).delete()
+			if deleted:
+				messages.success(request, "Press release deleted.")
+			else:
+				messages.error(request, "Press release not found.")
+			return redirect("media:press")
+
 		sport = request.POST.get("sport", "").strip()
 		headline = request.POST.get("headline", "").strip()
 		body = request.POST.get("body", "").strip()

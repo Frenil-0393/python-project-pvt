@@ -1,6 +1,11 @@
 {% extends 'shared/base.html' %}
 {% block content %}
 <h2>Fan - Live Scores</h2>
+<form method="get" class="card">
+    <label>Filter by Sport</label>
+    <input name="sport" type="text" value="{{ sport }}" placeholder="e.g. Cricket">
+    <button type="submit">Apply Filter</button>
+</form>
 <h3>Live Matches</h3>
 <ul>
 {% for match in live_matches %}
