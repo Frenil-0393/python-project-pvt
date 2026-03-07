@@ -1,13 +1,12 @@
 {% extends 'shared/base.html' %}
 {% block content %}
-<h2>Fan - Player Statistics</h2>
+<h2>Fan - Leaderboard</h2>
 <form method="get" class="card">
-    <label>Filter by Metric</label>
-    <input name="metric" type="text" value="{{ metric }}" placeholder="Runs / Goals / Wickets">
-    <label>Filter by Team</label>
-    <input name="team" type="text" value="{{ team }}" placeholder="Team name">
-    <button type="submit">Apply Filters</button>
+    <label>Metric</label>
+    <input name="metric" type="text" value="{{ metric }}" placeholder="runs / goals / wickets">
+    <button type="submit">Show Leaderboard</button>
 </form>
+
 <table>
     <thead><tr><th>Player</th><th>Team</th><th>Metric</th><th>Value</th><th>Match</th></tr></thead>
     <tbody>
@@ -20,7 +19,7 @@
             <td>{{ item.match.home_team }} vs {{ item.match.away_team }}</td>
         </tr>
     {% empty %}
-        <tr><td colspan="5">No stats available.</td></tr>
+        <tr><td colspan="5">No leaderboard data available.</td></tr>
     {% endfor %}
     </tbody>
 </table>

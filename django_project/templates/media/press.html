@@ -17,6 +17,19 @@
     <button type="submit">Save Press Release</button>
 </form>
 
+<h3>Filter Press Releases</h3>
+<form method="get" class="card">
+    <label>Sport Contains</label>
+    <input name="sport" type="text" value="{{ sport_filter }}" placeholder="Cricket">
+    <label>Status</label>
+    <select name="status">
+        <option value="">All</option>
+        <option value="draft" {% if status_filter == 'draft' %}selected{% endif %}>Draft</option>
+        <option value="published" {% if status_filter == 'published' %}selected{% endif %}>Published</option>
+    </select>
+    <button type="submit">Apply Filters</button>
+</form>
+
 <h3>Press Releases</h3>
 <table>
     <thead><tr><th>Sport</th><th>Headline</th><th>Status</th><th>Created</th><th>Action</th></tr></thead>

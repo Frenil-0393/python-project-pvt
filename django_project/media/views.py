@@ -113,5 +113,19 @@ def press_view(request):
 		messages.success(request, "Press release saved.")
 		return redirect("media:press")
 
+	status_filter = request.GET.get("status", "").strip()
+	sport_filter = request.GET.get("sport", "").strip()
 	press_releases = PressRelease.objects.all()
-	return render(request, "media/press.html", {"press_releases": press_releases})
+	if status_filter:
+		press_releases = press_releases.filter(status=status_filter)
+	if sport_filter:
+		press_releases = press_releases.filter(sport__icontains=sport_filter)
+	return render(
+		request,
+		"media/press.html",
+		{
+			"press_releases": press_releases,
+			"status_filter": status_filter,
+			"sport_filter": sport_filter,
+		},
+	)

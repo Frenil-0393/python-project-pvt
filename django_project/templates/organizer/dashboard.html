@@ -2,6 +2,17 @@
 {% block content %}
 <h2>Organizer Dashboard</h2>
 <p>Welcome, {{ user_name }}.</p>
+<table>
+    <thead><tr><th>Total Matches</th><th>Live Matches</th><th>Score Updates</th><th>Player Stats</th></tr></thead>
+    <tbody>
+        <tr>
+            <td>{{ total_matches }}</td>
+            <td>{{ live_matches }}</td>
+            <td>{{ total_score_updates }}</td>
+            <td>{{ total_player_stats }}</td>
+        </tr>
+    </tbody>
+</table>
 <ul>
     <li><a href="{% url 'organizer:schedule' %}">Manage Schedule</a></li>
     <li><a href="{% url 'organizer:scores' %}">Update Live Scores</a></li>

@@ -41,8 +41,25 @@ def live_scores_view(request):
 
 @role_required("fan")
 def stats_view(request):
+	metric = request.GET.get("metric", "").strip()
+	team = request.GET.get("team", "").strip()
 	stats = PlayerStat.objects.select_related("match").all()
-	return render(request, "fan/stats.html", {"stats": stats})
+	if metric:
+		stats = stats.filter(metric_name__icontains=metric)
+	if team:
+		stats = stats.filter(team_name__icontains=team)
+	return render(request, "fan/stats.html", {"stats": stats, "metric": metric, "team": team})
+
+
+@role_required("fan")
+def leaderboard_view(request):
+	metric = request.GET.get("metric", "runs").strip() or "runs"
+	stats = (
+		PlayerStat.objects.filter(metric_name__icontains=metric)
+		.select_related("match")
+		.order_by("-metric_value", "player_name")
+	)
+	return render(request, "fan/leaderboard.html", {"stats": stats, "metric": metric})
 
 
 @role_required("fan")

@@ -8,7 +8,14 @@ from organizer.models import Match, PlayerStat, ScoreUpdate
 
 @role_required("organizer")
 def dashboard(request):
-	return render(request, "organizer/dashboard.html", {"user_name": request.user.first_name or "Organizer"})
+	context = {
+		"user_name": request.user.first_name or "Organizer",
+		"total_matches": Match.objects.count(),
+		"live_matches": Match.objects.filter(status=Match.STATUS_LIVE).count(),
+		"total_score_updates": ScoreUpdate.objects.count(),
+		"total_player_stats": PlayerStat.objects.count(),
+	}
+	return render(request, "organizer/dashboard.html", context)
 
 
 @role_required("organizer")
@@ -20,6 +27,15 @@ def schedule_view(request):
 			deleted, _ = Match.objects.filter(id=match_id).delete()
 			if deleted:
 				messages.success(request, "Match deleted.")
+			else:
+				messages.error(request, "Match not found.")
+			return redirect("organizer:schedule")
+		if action == "set_status":
+			match_id = request.POST.get("match_id")
+			status = request.POST.get("status", Match.STATUS_SCHEDULED)
+			updated = Match.objects.filter(id=match_id).update(status=status)
+			if updated:
+				messages.success(request, "Match status updated.")
 			else:
 				messages.error(request, "Match not found.")
 			return redirect("organizer:schedule")

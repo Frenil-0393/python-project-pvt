@@ -33,6 +33,17 @@
             <td>{{ match.venue }}</td>
             <td>{{ match.get_status_display }}</td>
             <td>
+                <form method="post" style="margin-bottom:6px;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="set_status">
+                    <input type="hidden" name="match_id" value="{{ match.id }}">
+                    <select name="status">
+                        <option value="scheduled">Scheduled</option>
+                        <option value="live">Live</option>
+                        <option value="finished">Finished</option>
+                    </select>
+                    <button type="submit">Update</button>
+                </form>
                 <form method="post">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="delete">
