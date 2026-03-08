@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.core.paginator import Paginator
 
 from common.decorators import role_required
 from media.models import Highlight
@@ -22,19 +23,23 @@ def timetable_view(request):
 @role_required("fan")
 def live_scores_view(request):
 	sport = request.GET.get("sport", "").strip()
+	sort = request.GET.get("sort", "-created_at").strip() or "-created_at"
 	live_matches = Match.objects.filter(status=Match.STATUS_LIVE)
 	if sport:
 		live_matches = live_matches.filter(sport__icontains=sport)
-	updates = ScoreUpdate.objects.select_related("match").all()
+	updates = ScoreUpdate.objects.select_related("match").order_by(sort)
 	if sport:
 		updates = updates.filter(match__sport__icontains=sport)
+	paginator = Paginator(updates, 10)
+	page_obj = paginator.get_page(request.GET.get("page"))
 	return render(
 		request,
 		"fan/live_scores.html",
 		{
 			"live_matches": live_matches,
-			"updates": updates,
+			"updates": page_obj,
 			"sport": sport,
+			"sort": sort,
 		},
 	)
 
@@ -43,12 +48,20 @@ def live_scores_view(request):
 def stats_view(request):
 	metric = request.GET.get("metric", "").strip()
 	team = request.GET.get("team", "").strip()
+	sort = request.GET.get("sort", "player_name").strip() or "player_name"
 	stats = PlayerStat.objects.select_related("match").all()
 	if metric:
 		stats = stats.filter(metric_name__icontains=metric)
 	if team:
 		stats = stats.filter(team_name__icontains=team)
-	return render(request, "fan/stats.html", {"stats": stats, "metric": metric, "team": team})
+	stats = stats.order_by(sort)
+	paginator = Paginator(stats, 10)
+	page_obj = paginator.get_page(request.GET.get("page"))
+	return render(
+		request,
+		"fan/stats.html",
+		{"stats": page_obj, "metric": metric, "team": team, "sort": sort},
+	)
 
 
 @role_required("fan")
@@ -64,5 +77,8 @@ def leaderboard_view(request):
 
 @role_required("fan")
 def highlights_view(request):
-	highlights = Highlight.objects.select_related("match").all()
-	return render(request, "fan/highlights.html", {"highlights": highlights})
+	sort = request.GET.get("sort", "-published_at").strip() or "-published_at"
+	highlights = Highlight.objects.select_related("match").order_by(sort)
+	paginator = Paginator(highlights, 10)
+	page_obj = paginator.get_page(request.GET.get("page"))
+	return render(request, "fan/highlights.html", {"highlights": page_obj, "sort": sort})

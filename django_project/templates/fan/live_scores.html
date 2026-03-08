@@ -4,6 +4,11 @@
 <form method="get" class="card">
     <label>Filter by Sport</label>
     <input name="sport" type="text" value="{{ sport }}" placeholder="e.g. Cricket">
+    <label>Sort Updates</label>
+    <select name="sort">
+        <option value="-created_at" {% if sort == '-created_at' %}selected{% endif %}>Newest First</option>
+        <option value="created_at" {% if sort == 'created_at' %}selected{% endif %}>Oldest First</option>
+    </select>
     <button type="submit">Apply Filter</button>
 </form>
 <h3>Live Matches</h3>
@@ -31,4 +36,10 @@
     {% endfor %}
     </tbody>
 </table>
+
+<div>
+    {% if updates.has_previous %}<a href="?sport={{ sport }}&sort={{ sort }}&page={{ updates.previous_page_number }}">Previous</a>{% endif %}
+    <span> Page {{ updates.number }} of {{ updates.paginator.num_pages }} </span>
+    {% if updates.has_next %}<a href="?sport={{ sport }}&sort={{ sort }}&page={{ updates.next_page_number }}">Next</a>{% endif %}
+</div>
 {% endblock %}

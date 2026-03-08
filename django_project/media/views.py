@@ -45,9 +45,10 @@ def broadcast_view(request):
 		messages.success(request, "Broadcast session saved.")
 		return redirect("media:broadcast")
 
+	sort = request.GET.get("sort", "-updated_at").strip() or "-updated_at"
 	matches = Match.objects.all()
-	broadcasts = BroadcastSession.objects.select_related("match").all()
-	return render(request, "media/broadcast.html", {"matches": matches, "broadcasts": broadcasts})
+	broadcasts = BroadcastSession.objects.select_related("match").order_by(sort)
+	return render(request, "media/broadcast.html", {"matches": matches, "broadcasts": broadcasts, "sort": sort})
 
 
 @role_required("media")
@@ -82,9 +83,18 @@ def highlights_view(request):
 		messages.success(request, "Highlight published.")
 		return redirect("media:highlights")
 
+	q = request.GET.get("q", "").strip()
+	sort = request.GET.get("sort", "-published_at").strip() or "-published_at"
 	matches = Match.objects.all()
 	highlights = Highlight.objects.select_related("match").all()
-	return render(request, "media/highlights.html", {"matches": matches, "highlights": highlights})
+	if q:
+		highlights = highlights.filter(title__icontains=q)
+	highlights = highlights.order_by(sort)
+	return render(
+		request,
+		"media/highlights.html",
+		{"matches": matches, "highlights": highlights, "q": q, "sort": sort},
+	)
 
 
 @role_required("media")

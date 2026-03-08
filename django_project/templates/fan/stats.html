@@ -6,6 +6,11 @@
     <input name="metric" type="text" value="{{ metric }}" placeholder="Runs / Goals / Wickets">
     <label>Filter by Team</label>
     <input name="team" type="text" value="{{ team }}" placeholder="Team name">
+    <label>Sort</label>
+    <select name="sort">
+        <option value="player_name" {% if sort == 'player_name' %}selected{% endif %}>Player Name A-Z</option>
+        <option value="-updated_at" {% if sort == '-updated_at' %}selected{% endif %}>Recently Updated</option>
+    </select>
     <button type="submit">Apply Filters</button>
 </form>
 <table>
@@ -24,4 +29,9 @@
     {% endfor %}
     </tbody>
 </table>
+<div>
+    {% if stats.has_previous %}<a href="?metric={{ metric }}&team={{ team }}&sort={{ sort }}&page={{ stats.previous_page_number }}">Previous</a>{% endif %}
+    <span> Page {{ stats.number }} of {{ stats.paginator.num_pages }} </span>
+    {% if stats.has_next %}<a href="?metric={{ metric }}&team={{ team }}&sort={{ sort }}&page={{ stats.next_page_number }}">Next</a>{% endif %}
+</div>
 {% endblock %}

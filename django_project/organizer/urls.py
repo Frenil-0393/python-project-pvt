@@ -9,4 +9,7 @@ urlpatterns = [
     path("schedule/", views.schedule_view, name="schedule"),
     path("scores/", views.scores_view, name="scores"),
     path("players/", views.players_view, name="players"),
+    path("export/matches/", views.export_matches_csv, name="export_matches"),
+    path("export/scores/", views.export_scores_csv, name="export_scores"),
+    path("export/players/", views.export_players_csv, name="export_players"),
 ]

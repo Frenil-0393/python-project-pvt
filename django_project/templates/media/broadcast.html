@@ -1,6 +1,14 @@
 {% extends 'shared/base.html' %}
 {% block content %}
 <h2>Media - Broadcast Hub</h2>
+<form method="get" class="card">
+    <label>Sort Broadcasts</label>
+    <select name="sort">
+        <option value="-updated_at" {% if sort == '-updated_at' %}selected{% endif %}>Recently Updated</option>
+        <option value="channel_name" {% if sort == 'channel_name' %}selected{% endif %}>Channel A-Z</option>
+    </select>
+    <button type="submit">Apply</button>
+</form>
 <form method="post" class="card">
     {% csrf_token %}
     <label>Match</label>

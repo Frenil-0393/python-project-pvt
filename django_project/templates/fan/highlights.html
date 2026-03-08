@@ -1,6 +1,14 @@
 {% extends 'shared/base.html' %}
 {% block content %}
 <h2>Fan - Highlights</h2>
+<form method="get" class="card">
+    <label>Sort Highlights</label>
+    <select name="sort">
+        <option value="-published_at" {% if sort == '-published_at' %}selected{% endif %}>Newest</option>
+        <option value="-views" {% if sort == '-views' %}selected{% endif %}>Most Viewed</option>
+    </select>
+    <button type="submit">Apply</button>
+</form>
 <table>
     <thead><tr><th>Title</th><th>Match</th><th>Duration</th><th>Views</th></tr></thead>
     <tbody>
@@ -16,4 +24,9 @@
     {% endfor %}
     </tbody>
 </table>
+<div>
+    {% if highlights.has_previous %}<a href="?sort={{ sort }}&page={{ highlights.previous_page_number }}">Previous</a>{% endif %}
+    <span> Page {{ highlights.number }} of {{ highlights.paginator.num_pages }} </span>
+    {% if highlights.has_next %}<a href="?sort={{ sort }}&page={{ highlights.next_page_number }}">Next</a>{% endif %}
+</div>
 {% endblock %}

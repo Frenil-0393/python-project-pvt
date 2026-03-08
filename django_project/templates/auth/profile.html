@@ -1,0 +1,17 @@
+{% extends 'shared/base.html' %}
+{% block content %}
+<h2>My Profile</h2>
+<form method="post" class="card">
+    {% csrf_token %}
+    <label>Full Name</label>
+    <input name="full_name" type="text" value="{{ user.first_name }}" required>
+
+    <label>Email</label>
+    <input name="email" type="email" value="{{ user.email }}" required>
+
+    <label>Role</label>
+    <input type="text" value="{{ user.get_role_display }}" disabled>
+
+    <button type="submit">Update Profile</button>
+</form>
+{% endblock %}

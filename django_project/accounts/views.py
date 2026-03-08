@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
 from .forms import RegistrationForm
@@ -50,3 +51,21 @@ def register_view(request):
 def logout_view(request):
 	logout(request)
 	return redirect("login")
+
+
+@login_required
+def profile_view(request):
+	if request.method == "POST":
+		full_name = request.POST.get("full_name", "").strip()
+		email = request.POST.get("email", "").strip()
+		if not full_name or not email:
+			messages.error(request, "Name and email are required.")
+			return redirect("profile")
+
+		request.user.first_name = full_name
+		request.user.email = email
+		request.user.save(update_fields=["first_name", "email"])
+		messages.success(request, "Profile updated successfully.")
+		return redirect("profile")
+
+	return render(request, "auth/profile.html")

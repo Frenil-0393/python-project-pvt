@@ -1,6 +1,8 @@
 from django.contrib import messages
+from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
+import csv
 
 from common.decorators import role_required
 from organizer.models import Match, PlayerStat, ScoreUpdate
@@ -169,3 +171,48 @@ def players_view(request):
 			"player_stats": player_stats,
 		},
 	)
+
+
+@role_required("organizer")
+def export_matches_csv(request):
+	response = HttpResponse(content_type="text/csv")
+	response["Content-Disposition"] = 'attachment; filename="matches.csv"'
+	writer = csv.writer(response)
+	writer.writerow(["Sport", "Home Team", "Away Team", "Venue", "Start Time", "Status"])
+	for item in Match.objects.all():
+		writer.writerow([item.sport, item.home_team, item.away_team, item.venue, item.start_time, item.status])
+	return response
+
+
+@role_required("organizer")
+def export_scores_csv(request):
+	response = HttpResponse(content_type="text/csv")
+	response["Content-Disposition"] = 'attachment; filename="scores.csv"'
+	writer = csv.writer(response)
+	writer.writerow(["Match", "Summary", "Status Note", "Created"])
+	for item in ScoreUpdate.objects.select_related("match").all():
+		writer.writerow([
+			f"{item.match.home_team} vs {item.match.away_team}",
+			item.summary,
+			item.status_note,
+			item.created_at,
+		])
+	return response
+
+
+@role_required("organizer")
+def export_players_csv(request):
+	response = HttpResponse(content_type="text/csv")
+	response["Content-Disposition"] = 'attachment; filename="player_stats.csv"'
+	writer = csv.writer(response)
+	writer.writerow(["Player", "Team", "Metric", "Value", "Availability", "Match"])
+	for item in PlayerStat.objects.select_related("match").all():
+		writer.writerow([
+			item.player_name,
+			item.team_name,
+			item.metric_name,
+			item.metric_value,
+			item.availability,
+			f"{item.match.home_team} vs {item.match.away_team}",
+		])
+	return response

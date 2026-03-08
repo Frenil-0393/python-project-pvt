@@ -37,3 +37,24 @@ class AccountsFlowTests(TestCase):
 		)
 		self.assertEqual(response.status_code, 302)
 		self.assertIn("/media/", response.url)
+
+	def test_profile_update(self):
+		user = User.objects.create_user(
+			username="orguser",
+			password="StrongPass123",
+			email="org@example.com",
+			role="organizer",
+			first_name="Old Name",
+		)
+		self.client.login(username="orguser", password="StrongPass123")
+		response = self.client.post(
+			reverse("profile"),
+			{
+				"full_name": "New Name",
+				"email": "new@example.com",
+			},
+		)
+		self.assertEqual(response.status_code, 302)
+		user.refresh_from_db()
+		self.assertEqual(user.first_name, "New Name")
+		self.assertEqual(user.email, "new@example.com")
