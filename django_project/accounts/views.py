@@ -1,6 +1,8 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
 from django.shortcuts import redirect, render
 
 from .forms import RegistrationForm
@@ -16,6 +18,9 @@ def _redirect_by_role(role: str):
 
 
 def login_view(request):
+	if request.user.is_authenticated:
+		return _redirect_by_role(request.user.role)
+
 	if request.method == "POST":
 		username = request.POST.get("username", "").strip()
 		password = request.POST.get("password", "")
@@ -37,6 +42,9 @@ def login_view(request):
 
 
 def register_view(request):
+	if request.user.is_authenticated:
+		return _redirect_by_role(request.user.role)
+
 	if request.method == "POST":
 		form = RegistrationForm(request.POST)
 		if form.is_valid():
@@ -69,3 +77,19 @@ def profile_view(request):
 		return redirect("profile")
 
 	return render(request, "auth/profile.html")
+
+
+@login_required
+def change_password_view(request):
+	if request.method == "POST":
+		form = PasswordChangeForm(request.user, request.POST)
+		if form.is_valid():
+			user = form.save()
+			update_session_auth_hash(request, user)
+			messages.success(request, "Password changed successfully.")
+			return redirect("profile")
+		messages.error(request, "Please correct the password form errors.")
+		return render(request, "auth/change_password.html", {"form": form})
+
+	form = PasswordChangeForm(request.user)
+	return render(request, "auth/change_password.html", {"form": form})

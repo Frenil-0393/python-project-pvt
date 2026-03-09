@@ -58,3 +58,36 @@ class AccountsFlowTests(TestCase):
 		user.refresh_from_db()
 		self.assertEqual(user.first_name, "New Name")
 		self.assertEqual(user.email, "new@example.com")
+
+	def test_login_redirects_if_authenticated(self):
+		User.objects.create_user(
+			username="fan2",
+			password="StrongPass123",
+			email="fan2@example.com",
+			role="fan",
+		)
+		self.client.login(username="fan2", password="StrongPass123")
+		response = self.client.get(reverse("login"))
+		self.assertEqual(response.status_code, 302)
+		self.assertIn("/fan/", response.url)
+
+	def test_change_password(self):
+		User.objects.create_user(
+			username="pwuser",
+			password="StrongPass123",
+			email="pw@example.com",
+			role="media",
+		)
+		self.client.login(username="pwuser", password="StrongPass123")
+		response = self.client.post(
+			reverse("change_password"),
+			{
+				"old_password": "StrongPass123",
+				"new_password1": "NewStrongPass456",
+				"new_password2": "NewStrongPass456",
+			},
+		)
+		self.assertEqual(response.status_code, 302)
+		self.client.logout()
+		relogin = self.client.login(username="pwuser", password="NewStrongPass456")
+		self.assertTrue(relogin)

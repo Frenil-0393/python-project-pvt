@@ -1,6 +1,13 @@
 {% extends 'shared/base.html' %}
 {% block content %}
 <h2>Organizer - Player Stats</h2>
+<form method="get" class="card">
+    <label>Team Filter</label>
+    <input name="team" type="text" value="{{ team_filter }}" placeholder="Team name">
+    <label>Metric Filter</label>
+    <input name="metric" type="text" value="{{ metric_filter }}" placeholder="Runs / Goals">
+    <button type="submit">Apply Filters</button>
+</form>
 <form method="post" class="card">
     {% csrf_token %}
     <label>Match</label>

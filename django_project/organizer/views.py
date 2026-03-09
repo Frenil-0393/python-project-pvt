@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
+from django.db.models import Q
 import csv
 
 from common.decorators import role_required
@@ -70,8 +71,18 @@ def schedule_view(request):
 		messages.success(request, "Match fixture created.")
 		return redirect("organizer:schedule")
 
+	sport = request.GET.get("sport", "").strip()
+	status_filter = request.GET.get("status", "").strip()
 	matches = Match.objects.all()
-	return render(request, "organizer/schedule.html", {"matches": matches})
+	if sport:
+		matches = matches.filter(sport__icontains=sport)
+	if status_filter:
+		matches = matches.filter(status=status_filter)
+	return render(
+		request,
+		"organizer/schedule.html",
+		{"matches": matches, "sport": sport, "status_filter": status_filter},
+	)
 
 
 @role_required("organizer")
@@ -109,14 +120,20 @@ def scores_view(request):
 		messages.success(request, "Score updated successfully.")
 		return redirect("organizer:scores")
 
+	match_search = request.GET.get("match", "").strip()
 	matches = Match.objects.all()
 	score_updates = ScoreUpdate.objects.select_related("match").all()
+	if match_search:
+		score_updates = score_updates.filter(
+			Q(match__home_team__icontains=match_search) | Q(match__away_team__icontains=match_search)
+		)
 	return render(
 		request,
 		"organizer/scores.html",
 		{
 			"matches": matches,
 			"score_updates": score_updates,
+			"match_search": match_search,
 		},
 	)
 
@@ -161,14 +178,22 @@ def players_view(request):
 		messages.success(request, "Player stats updated.")
 		return redirect("organizer:players")
 
+	team_filter = request.GET.get("team", "").strip()
+	metric_filter = request.GET.get("metric", "").strip()
 	matches = Match.objects.all()
 	player_stats = PlayerStat.objects.select_related("match").all()
+	if team_filter:
+		player_stats = player_stats.filter(team_name__icontains=team_filter)
+	if metric_filter:
+		player_stats = player_stats.filter(metric_name__icontains=metric_filter)
 	return render(
 		request,
 		"organizer/players.html",
 		{
 			"matches": matches,
 			"player_stats": player_stats,
+			"team_filter": team_filter,
+			"metric_filter": metric_filter,
 		},
 	)
 

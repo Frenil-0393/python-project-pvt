@@ -1,6 +1,18 @@
 {% extends 'shared/base.html' %}
 {% block content %}
 <h2>Organizer - Schedule</h2>
+<form method="get" class="card">
+    <label>Sport Filter</label>
+    <input name="sport" type="text" value="{{ sport }}" placeholder="Cricket">
+    <label>Status</label>
+    <select name="status">
+        <option value="">All</option>
+        <option value="scheduled" {% if status_filter == 'scheduled' %}selected{% endif %}>Scheduled</option>
+        <option value="live" {% if status_filter == 'live' %}selected{% endif %}>Live</option>
+        <option value="finished" {% if status_filter == 'finished' %}selected{% endif %}>Finished</option>
+    </select>
+    <button type="submit">Apply Filters</button>
+</form>
 <form method="post" class="card">
     {% csrf_token %}
     <label>Sport</label>

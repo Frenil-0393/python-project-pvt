@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.core.paginator import Paginator
+from django.db.models import F
 
 from common.decorators import role_required
 from media.models import Highlight
@@ -77,6 +78,12 @@ def leaderboard_view(request):
 
 @role_required("fan")
 def highlights_view(request):
+	if request.method == "POST":
+		action = request.POST.get("action", "")
+		if action == "view":
+			highlight_id = request.POST.get("highlight_id")
+			Highlight.objects.filter(id=highlight_id).update(views=F("views") + 1)
+
 	sort = request.GET.get("sort", "-published_at").strip() or "-published_at"
 	highlights = Highlight.objects.select_related("match").order_by(sort)
 	paginator = Paginator(highlights, 10)

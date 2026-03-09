@@ -1,6 +1,11 @@
 {% extends 'shared/base.html' %}
 {% block content %}
 <h2>Organizer - Live Scores</h2>
+<form method="get" class="card">
+    <label>Search Match Team</label>
+    <input name="match" type="text" value="{{ match_search }}" placeholder="e.g. India">
+    <button type="submit">Search</button>
+</form>
 <form method="post" class="card">
     {% csrf_token %}
     <label>Match</label>

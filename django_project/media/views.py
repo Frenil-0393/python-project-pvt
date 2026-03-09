@@ -109,6 +109,15 @@ def press_view(request):
 			else:
 				messages.error(request, "Press release not found.")
 			return redirect("media:press")
+		if action == "set_status":
+			press_id = request.POST.get("press_id")
+			status = request.POST.get("status", PressRelease.STATUS_DRAFT)
+			updated = PressRelease.objects.filter(id=press_id).update(status=status)
+			if updated:
+				messages.success(request, "Press status updated.")
+			else:
+				messages.error(request, "Press release not found.")
+			return redirect("media:press")
 
 		sport = request.POST.get("sport", "").strip()
 		headline = request.POST.get("headline", "").strip()
