@@ -42,6 +42,12 @@ def schedule_view(request):
 			else:
 				messages.error(request, "Match not found.")
 			return redirect("organizer:schedule")
+		if action == "bulk_status":
+			status = request.POST.get("status", Match.STATUS_SCHEDULED)
+			ids = request.POST.getlist("match_ids")
+			updated = Match.objects.filter(id__in=ids).update(status=status)
+			messages.success(request, f"Updated status for {updated} matches.")
+			return redirect("organizer:schedule")
 
 		sport = request.POST.get("sport", "").strip()
 		home_team = request.POST.get("home_team", "").strip()
@@ -58,6 +64,16 @@ def schedule_view(request):
 			start_time = timezone.datetime.fromisoformat(start_time_raw)
 		except ValueError:
 			messages.error(request, "Invalid date/time format.")
+			return redirect("organizer:schedule")
+
+		exists = Match.objects.filter(
+			sport=sport,
+			home_team=home_team,
+			away_team=away_team,
+			start_time=start_time,
+		).exists()
+		if exists:
+			messages.error(request, "Duplicate fixture exists for same sport/teams/time.")
 			return redirect("organizer:schedule")
 
 		Match.objects.create(

@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from django.core.paginator import Paginator
 from django.db.models import F
+from django.db.models import FloatField
+from django.db.models.functions import Cast
 
 from common.decorators import role_required
 from media.models import Highlight
@@ -68,12 +70,15 @@ def stats_view(request):
 @role_required("fan")
 def leaderboard_view(request):
 	metric = request.GET.get("metric", "runs").strip() or "runs"
+	order = request.GET.get("order", "desc").strip() or "desc"
+	order_by = "-metric_value_num" if order == "desc" else "metric_value_num"
 	stats = (
 		PlayerStat.objects.filter(metric_name__icontains=metric)
+		.annotate(metric_value_num=Cast("metric_value", FloatField()))
 		.select_related("match")
-		.order_by("-metric_value", "player_name")
+		.order_by(order_by, "player_name")
 	)
-	return render(request, "fan/leaderboard.html", {"stats": stats, "metric": metric})
+	return render(request, "fan/leaderboard.html", {"stats": stats, "metric": metric, "order": order})
 
 
 @role_required("fan")

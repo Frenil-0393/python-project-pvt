@@ -91,3 +91,31 @@ class AccountsFlowTests(TestCase):
 		self.client.logout()
 		relogin = self.client.login(username="pwuser", password="NewStrongPass456")
 		self.assertTrue(relogin)
+
+	def test_login_lockout_after_failed_attempts(self):
+		User.objects.create_user(
+			username="lockuser",
+			password="StrongPass123",
+			email="lock@example.com",
+			role="fan",
+		)
+		for _ in range(5):
+			self.client.post(
+				reverse("login"),
+				{
+					"username": "lockuser",
+					"password": "WrongPass",
+					"role": "fan",
+				},
+			)
+
+		response = self.client.post(
+			reverse("login"),
+			{
+				"username": "lockuser",
+				"password": "StrongPass123",
+				"role": "fan",
+			},
+		)
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, "Too many failed attempts")

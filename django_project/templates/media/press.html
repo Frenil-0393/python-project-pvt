@@ -1,6 +1,7 @@
 {% extends 'shared/base.html' %}
 {% block content %}
 <h2>Media - Press Room</h2>
+<p><a href="{% url 'media:export_press' %}">Export Press Releases CSV</a></p>
 <form method="post" class="card">
     {% csrf_token %}
     <label>Sport</label>

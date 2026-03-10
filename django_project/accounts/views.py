@@ -22,19 +22,27 @@ def login_view(request):
 		return _redirect_by_role(request.user.role)
 
 	if request.method == "POST":
+		failed_attempts = request.session.get("failed_login_attempts", 0)
+		if failed_attempts >= 5:
+			messages.error(request, "Too many failed attempts. Please restart browser session or contact admin.")
+			return render(request, "auth/login.html")
+
 		username = request.POST.get("username", "").strip()
 		password = request.POST.get("password", "")
 		role = request.POST.get("role", "")
 
 		user = authenticate(request, username=username, password=password)
 		if not user:
+			request.session["failed_login_attempts"] = failed_attempts + 1
 			messages.error(request, "Invalid username or password.")
 			return render(request, "auth/login.html")
 
 		if user.role != role:
+			request.session["failed_login_attempts"] = failed_attempts + 1
 			messages.error(request, "Selected role does not match your account.")
 			return render(request, "auth/login.html")
 
+		request.session["failed_login_attempts"] = 0
 		login(request, user)
 		return _redirect_by_role(user.role)
 
@@ -57,6 +65,7 @@ def register_view(request):
 
 
 def logout_view(request):
+	request.session["failed_login_attempts"] = 0
 	logout(request)
 	return redirect("login")
 

@@ -1,5 +1,7 @@
 from django.contrib import messages
+from django.http import HttpResponse
 from django.shortcuts import redirect, render
+import csv
 
 from common.decorators import role_required
 from media.models import BroadcastSession, Highlight, PressRelease
@@ -148,3 +150,14 @@ def press_view(request):
 			"sport_filter": sport_filter,
 		},
 	)
+
+
+@role_required("media")
+def export_press_csv(request):
+	response = HttpResponse(content_type="text/csv")
+	response["Content-Disposition"] = 'attachment; filename="press_releases.csv"'
+	writer = csv.writer(response)
+	writer.writerow(["Sport", "Headline", "Status", "Created"])
+	for item in PressRelease.objects.all():
+		writer.writerow([item.sport, item.headline, item.status, item.created_at])
+	return response

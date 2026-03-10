@@ -4,6 +4,11 @@
 <form method="get" class="card">
     <label>Metric</label>
     <input name="metric" type="text" value="{{ metric }}" placeholder="runs / goals / wickets">
+    <label>Order</label>
+    <select name="order">
+        <option value="desc" {% if order == 'desc' %}selected{% endif %}>Highest First</option>
+        <option value="asc" {% if order == 'asc' %}selected{% endif %}>Lowest First</option>
+    </select>
     <button type="submit">Show Leaderboard</button>
 </form>
 

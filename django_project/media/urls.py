@@ -9,4 +9,5 @@ urlpatterns = [
     path("broadcast/", views.broadcast_view, name="broadcast"),
     path("highlights/", views.highlights_view, name="highlights"),
     path("press/", views.press_view, name="press"),
+    path("press/export/", views.export_press_csv, name="export_press"),
 ]
