@@ -48,6 +48,8 @@ def broadcast_view(request):
 		return redirect("media:broadcast")
 
 	sort = request.GET.get("sort", "-updated_at").strip() or "-updated_at"
+	if sort not in {"-updated_at", "channel_name"}:
+		sort = "-updated_at"
 	matches = Match.objects.all()
 	broadcasts = BroadcastSession.objects.select_related("match").order_by(sort)
 	return render(request, "media/broadcast.html", {"matches": matches, "broadcasts": broadcasts, "sort": sort})
@@ -87,6 +89,8 @@ def highlights_view(request):
 
 	q = request.GET.get("q", "").strip()
 	sort = request.GET.get("sort", "-published_at").strip() or "-published_at"
+	if sort not in {"-published_at", "title"}:
+		sort = "-published_at"
 	matches = Match.objects.all()
 	highlights = Highlight.objects.select_related("match").all()
 	if q:
@@ -136,11 +140,15 @@ def press_view(request):
 
 	status_filter = request.GET.get("status", "").strip()
 	sport_filter = request.GET.get("sport", "").strip()
+	sort = request.GET.get("sort", "-created_at").strip() or "-created_at"
+	if sort not in {"-created_at", "created_at", "sport", "status"}:
+		sort = "-created_at"
 	press_releases = PressRelease.objects.all()
 	if status_filter:
 		press_releases = press_releases.filter(status=status_filter)
 	if sport_filter:
 		press_releases = press_releases.filter(sport__icontains=sport_filter)
+	press_releases = press_releases.order_by(sort)
 	return render(
 		request,
 		"media/press.html",
@@ -148,6 +156,7 @@ def press_view(request):
 			"press_releases": press_releases,
 			"status_filter": status_filter,
 			"sport_filter": sport_filter,
+			"sort": sort,
 		},
 	)
 

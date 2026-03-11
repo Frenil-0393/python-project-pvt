@@ -28,6 +28,13 @@
         <option value="draft" {% if status_filter == 'draft' %}selected{% endif %}>Draft</option>
         <option value="published" {% if status_filter == 'published' %}selected{% endif %}>Published</option>
     </select>
+    <label>Sort</label>
+    <select name="sort">
+        <option value="-created_at" {% if sort == '-created_at' %}selected{% endif %}>Newest</option>
+        <option value="created_at" {% if sort == 'created_at' %}selected{% endif %}>Oldest</option>
+        <option value="sport" {% if sort == 'sport' %}selected{% endif %}>Sport A-Z</option>
+        <option value="status" {% if sort == 'status' %}selected{% endif %}>Status</option>
+    </select>
     <button type="submit">Apply Filters</button>
 </form>
 

@@ -24,7 +24,7 @@ def login_view(request):
 	if request.method == "POST":
 		failed_attempts = request.session.get("failed_login_attempts", 0)
 		if failed_attempts >= 5:
-			messages.error(request, "Too many failed attempts. Please restart browser session or contact admin.")
+			messages.error(request, "Too many failed attempts. Please restart browser session.")
 			return render(request, "auth/login.html")
 
 		username = request.POST.get("username", "").strip()
@@ -34,12 +34,18 @@ def login_view(request):
 		user = authenticate(request, username=username, password=password)
 		if not user:
 			request.session["failed_login_attempts"] = failed_attempts + 1
+			remaining = max(0, 5 - (failed_attempts + 1))
 			messages.error(request, "Invalid username or password.")
+			if remaining:
+				messages.warning(request, f"Attempts left: {remaining}")
 			return render(request, "auth/login.html")
 
 		if user.role != role:
 			request.session["failed_login_attempts"] = failed_attempts + 1
+			remaining = max(0, 5 - (failed_attempts + 1))
 			messages.error(request, "Selected role does not match your account.")
+			if remaining:
+				messages.warning(request, f"Attempts left: {remaining}")
 			return render(request, "auth/login.html")
 
 		request.session["failed_login_attempts"] = 0
@@ -74,7 +80,7 @@ def logout_view(request):
 def profile_view(request):
 	if request.method == "POST":
 		full_name = request.POST.get("full_name", "").strip()
-		email = request.POST.get("email", "").strip()
+		email = request.POST.get("email", "").strip().lower()
 		if not full_name or not email:
 			messages.error(request, "Name and email are required.")
 			return redirect("profile")

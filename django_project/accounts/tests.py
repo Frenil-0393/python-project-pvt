@@ -119,3 +119,24 @@ class AccountsFlowTests(TestCase):
 		)
 		self.assertEqual(response.status_code, 200)
 		self.assertContains(response, "Too many failed attempts")
+
+	def test_register_duplicate_email_rejected(self):
+		User.objects.create_user(
+			username="existing",
+			password="StrongPass123",
+			email="same@example.com",
+			role="fan",
+		)
+		response = self.client.post(
+			reverse("register"),
+			{
+				"username": "newuser",
+				"full_name": "New User",
+				"email": "SAME@example.com",
+				"role": "fan",
+				"password1": "StrongPass123",
+				"password2": "StrongPass123",
+			},
+		)
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, "already registered")

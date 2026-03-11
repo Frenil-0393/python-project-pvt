@@ -26,7 +26,10 @@ def timetable_view(request):
 @role_required("fan")
 def live_scores_view(request):
 	sport = request.GET.get("sport", "").strip()
+	allowed_sorts = {"-created_at", "created_at"}
 	sort = request.GET.get("sort", "-created_at").strip() or "-created_at"
+	if sort not in allowed_sorts:
+		sort = "-created_at"
 	live_matches = Match.objects.filter(status=Match.STATUS_LIVE)
 	if sport:
 		live_matches = live_matches.filter(sport__icontains=sport)
@@ -51,7 +54,10 @@ def live_scores_view(request):
 def stats_view(request):
 	metric = request.GET.get("metric", "").strip()
 	team = request.GET.get("team", "").strip()
+	allowed_sorts = {"player_name", "-updated_at"}
 	sort = request.GET.get("sort", "player_name").strip() or "player_name"
+	if sort not in allowed_sorts:
+		sort = "player_name"
 	stats = PlayerStat.objects.select_related("match").all()
 	if metric:
 		stats = stats.filter(metric_name__icontains=metric)
@@ -89,7 +95,10 @@ def highlights_view(request):
 			highlight_id = request.POST.get("highlight_id")
 			Highlight.objects.filter(id=highlight_id).update(views=F("views") + 1)
 
+	allowed_sorts = {"-published_at", "-views"}
 	sort = request.GET.get("sort", "-published_at").strip() or "-published_at"
+	if sort not in allowed_sorts:
+		sort = "-published_at"
 	highlights = Highlight.objects.select_related("match").order_by(sort)
 	paginator = Paginator(highlights, 10)
 	page_obj = paginator.get_page(request.GET.get("page"))

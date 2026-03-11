@@ -15,6 +15,7 @@ def dashboard(request):
 		"user_name": request.user.first_name or "Organizer",
 		"total_matches": Match.objects.count(),
 		"live_matches": Match.objects.filter(status=Match.STATUS_LIVE).count(),
+		"upcoming_matches": Match.objects.filter(status=Match.STATUS_SCHEDULED).count(),
 		"total_score_updates": ScoreUpdate.objects.count(),
 		"total_player_stats": PlayerStat.objects.count(),
 	}
@@ -45,6 +46,9 @@ def schedule_view(request):
 		if action == "bulk_status":
 			status = request.POST.get("status", Match.STATUS_SCHEDULED)
 			ids = request.POST.getlist("match_ids")
+			if not ids:
+				messages.error(request, "Select at least one match for bulk update.")
+				return redirect("organizer:schedule")
 			updated = Match.objects.filter(id__in=ids).update(status=status)
 			messages.success(request, f"Updated status for {updated} matches.")
 			return redirect("organizer:schedule")
@@ -183,15 +187,17 @@ def players_view(request):
 			messages.error(request, "Invalid match selected.")
 			return redirect("organizer:players")
 
-		PlayerStat.objects.create(
+		obj, created = PlayerStat.objects.update_or_create(
 			match=match,
 			player_name=player_name,
-			team_name=team_name,
 			metric_name=metric_name,
-			metric_value=metric_value,
-			availability=availability,
+			defaults={
+				"team_name": team_name,
+				"metric_value": metric_value,
+				"availability": availability,
+			},
 		)
-		messages.success(request, "Player stats updated.")
+		messages.success(request, "Player stat created." if created else "Player stat updated.")
 		return redirect("organizer:players")
 
 	team_filter = request.GET.get("team", "").strip()
