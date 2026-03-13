@@ -1,12 +1,148 @@
 {% extends 'shared/base.html' %}
+{% load static %}
+{% block title %}ScoreClub | Fan Dashboard{% endblock %}
 {% block content %}
-<h2>Fan Dashboard</h2>
-<p>Welcome, {{ user_name }}.</p>
-<ul>
-    <li><a href="{% url 'fan:live_scores' %}">Live Scores</a></li>
-    <li><a href="{% url 'fan:timetable' %}">Timetable</a></li>
-    <li><a href="{% url 'fan:stats' %}">Player Stats</a></li>
-    <li><a href="{% url 'fan:leaderboard' %}">Leaderboards</a></li>
-    <li><a href="{% url 'fan:highlights' %}">Highlights</a></li>
-</ul>
+<section class="hero-panel" data-reveal>
+    <div class="hero-copy">
+        <p class="eyebrow">Fan command center</p>
+        <h1>Welcome back, {{ user_name }}.</h1>
+        <p>Track live momentum, scan tomorrow’s fixtures, and jump from stats to highlights without leaving the same immersive view.</p>
+        <div class="dashboard-links">
+            <a href="{% url 'fan:live_scores' %}" class="button">Open live scores</a>
+            <a href="{% url 'fan:highlights' %}" class="button secondary">Watch highlights</a>
+        </div>
+    </div>
+    <div class="hero-visual">
+        <img src="{% static 'img/score-wave.svg' %}" alt="Dynamic sports signal graphic">
+    </div>
+</section>
+
+<section class="metric-grid" data-reveal>
+    <article class="metric-card">
+        <h3>Live fixtures</h3>
+        <p class="metric-value" data-count-to="{{ live_count }}">0</p>
+        <p class="metric-footnote">Matches currently in motion</p>
+    </article>
+    <article class="metric-card">
+        <h3>Total fixtures</h3>
+        <p class="metric-value" data-count-to="{{ match_count }}">0</p>
+        <p class="metric-footnote">All seeded and scheduled events</p>
+    </article>
+    <article class="metric-card">
+        <h3>Highlight drops</h3>
+        <p class="metric-value" data-count-to="{{ highlight_count }}">0</p>
+        <p class="metric-footnote">Published recap moments</p>
+    </article>
+    <article class="metric-card">
+        <h3>Tracked stats</h3>
+        <p class="metric-value" data-count-to="{{ stat_count }}">0</p>
+        <p class="metric-footnote">Player performance records</p>
+    </article>
+</section>
+
+<section class="dashboard-grid" data-reveal>
+    <article class="surface span-7">
+        <div class="surface-header">
+            <div>
+                <p class="eyebrow">Up next</p>
+                <h2 class="section-heading">Featured fixtures</h2>
+                <p class="section-subtitle">The next key matches across the calendar.</p>
+            </div>
+        </div>
+        {% if upcoming_matches %}
+        <div class="fixture-grid">
+            {% for match in upcoming_matches %}
+            <article class="fixture-card">
+                <span class="status-badge {{ match.status }}">{{ match.get_status_display }}</span>
+                <h3>{{ match.home_team }} vs {{ match.away_team }}</h3>
+                <p>{{ match.sport }} at {{ match.venue }}</p>
+                <span class="list-meta">{{ match.start_time }}</span>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <h3>No fixtures available</h3>
+            <p>Run the demo-data seed command or create fixtures from the organizer workspace.</p>
+        </div>
+        {% endif %}
+    </article>
+
+    <aside class="stack-card span-5">
+        <div>
+            <p class="eyebrow">Now playing</p>
+            <h2 class="section-heading">Live match radar</h2>
+        </div>
+        {% if live_matches %}
+        <ul class="timeline-list">
+            {% for match in live_matches %}
+            <li class="timeline-entry">
+                <span class="status-badge live">Live</span>
+                <strong>{{ match.home_team }} vs {{ match.away_team }}</strong>
+                <p>{{ match.sport }} from {{ match.venue }}</p>
+                <span class="timeline-meta">Started {{ match.start_time }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="empty-state">
+            <h3>No live fixtures</h3>
+            <p>The dashboard will light up here when a match status is switched to live.</p>
+        </div>
+        {% endif %}
+    </aside>
+
+    <article class="surface span-6">
+        <div class="surface-header">
+            <div>
+                <p class="eyebrow">Replay room</p>
+                <h2 class="section-heading">Recent highlights</h2>
+            </div>
+            <a href="{% url 'fan:highlights' %}" class="ghost-link pill">See all</a>
+        </div>
+        {% if recent_highlights %}
+        <div class="media-wall">
+            {% for item in recent_highlights %}
+            <article class="highlight-card">
+                <span class="chip">{{ item.duration|default:'Quick cut' }}</span>
+                <h3>{{ item.title }}</h3>
+                <p>{{ item.description|default:'Curated replay highlight ready for fans.' }}</p>
+                <span class="list-meta">{{ item.match.home_team }} vs {{ item.match.away_team }}</span>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <h3>No highlights yet</h3>
+            <p>Media uploads will appear here as soon as they are published.</p>
+        </div>
+        {% endif %}
+    </article>
+
+    <article class="surface span-6">
+        <div class="surface-header">
+            <div>
+                <p class="eyebrow">Performance feed</p>
+                <h2 class="section-heading">Recently updated stats</h2>
+            </div>
+            <a href="{% url 'fan:stats' %}" class="ghost-link pill">Open stats</a>
+        </div>
+        {% if recent_stats %}
+        <ul class="timeline-list">
+            {% for item in recent_stats %}
+            <li class="timeline-entry">
+                <strong>{{ item.player_name }}</strong>
+                <p>{{ item.team_name }} | {{ item.metric_name }}: {{ item.metric_value }}</p>
+                <span class="timeline-meta">{{ item.match.home_team }} vs {{ item.match.away_team }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="empty-state">
+            <h3>No stats available</h3>
+            <p>Organizer updates to player metrics will surface here.</p>
+        </div>
+        {% endif %}
+    </article>
+</section>
 {% endblock %}

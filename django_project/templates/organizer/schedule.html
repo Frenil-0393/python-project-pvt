@@ -1,86 +1,116 @@
 {% extends 'shared/base.html' %}
+{% block title %}ScoreClub | Schedule Control{% endblock %}
 {% block content %}
-<h2>Organizer - Schedule</h2>
-<form method="get" class="card">
-    <label>Sport Filter</label>
-    <input name="sport" type="text" value="{{ sport }}" placeholder="Cricket">
-    <label>Status</label>
-    <select name="status">
-        <option value="">All</option>
-        <option value="scheduled" {% if status_filter == 'scheduled' %}selected{% endif %}>Scheduled</option>
-        <option value="live" {% if status_filter == 'live' %}selected{% endif %}>Live</option>
-        <option value="finished" {% if status_filter == 'finished' %}selected{% endif %}>Finished</option>
-    </select>
-    <button type="submit">Apply Filters</button>
-</form>
-<form method="post" class="card">
-    {% csrf_token %}
-    <label>Sport</label>
-    <input name="sport" type="text" placeholder="Cricket" required>
-    <label>Home Team</label>
-    <input name="home_team" type="text" required>
-    <label>Away Team</label>
-    <input name="away_team" type="text" required>
-    <label>Venue</label>
-    <input name="venue" type="text" required>
-    <label>Start Time</label>
-    <input name="start_time" type="datetime-local" required>
-    <label>Status</label>
-    <select name="status">
-        <option value="scheduled">Scheduled</option>
-        <option value="live">Live</option>
-        <option value="finished">Finished</option>
-    </select>
-    <button type="submit">Create Fixture</button>
-</form>
+<section class="hero-panel" data-reveal>
+    <div class="hero-copy">
+        <p class="eyebrow">Fixture operations</p>
+        <h1>Create and manage the full match slate.</h1>
+        <p>Build fixtures with structured input fields, then switch status or remove entries from the same management surface.</p>
+        <div class="badge-row">
+            <span class="chip">{{ match_count }} total fixtures</span>
+            <span class="chip">{{ scheduled_count }} scheduled</span>
+            <span class="chip">{{ live_count }} live</span>
+        </div>
+    </div>
+    <article class="stack-card">
+        <div>
+            <p class="eyebrow">Create fixture</p>
+            <h2 class="section-heading">Add new match</h2>
+        </div>
+        <form method="post" class="form-grid columns-2">
+            {% csrf_token %}
+            <div>
+                <label for="sport">Sport</label>
+                <input id="sport" name="sport" type="text" placeholder="Cricket" required>
+            </div>
+            <div>
+                <label for="venue">Venue</label>
+                <input id="venue" name="venue" type="text" required>
+            </div>
+            <div>
+                <label for="home_team">Home team</label>
+                <input id="home_team" name="home_team" type="text" required>
+            </div>
+            <div>
+                <label for="away_team">Away team</label>
+                <input id="away_team" name="away_team" type="text" required>
+            </div>
+            <div>
+                <label for="start_time">Start time</label>
+                <input id="start_time" name="start_time" type="datetime-local" required>
+            </div>
+            <div>
+                <label for="status">Status</label>
+                <select id="status" name="status">
+                    <option value="scheduled">Scheduled</option>
+                    <option value="live">Live</option>
+                    <option value="finished">Finished</option>
+                </select>
+            </div>
+            <div class="form-actions span-12">
+                <button type="submit">Create fixture</button>
+            </div>
+        </form>
+    </article>
+</section>
 
-<h3>Matches</h3>
-<form method="post" class="card">
-    {% csrf_token %}
-    <input type="hidden" name="action" value="bulk_status">
-    <p style="margin:0; font-size:12px; color:#555;">Select rows in the table, then apply bulk status.</p>
-    <label>Bulk Status</label>
-    <select name="status">
-        <option value="scheduled">Scheduled</option>
-        <option value="live">Live</option>
-        <option value="finished">Finished</option>
-    </select>
-    <button type="submit">Update Selected Matches</button>
-
-<table>
-    <thead><tr><th>Select</th><th>Sport</th><th>Fixture</th><th>Venue</th><th>Status</th><th>Action</th></tr></thead>
-    <tbody>
-    {% for match in matches %}
-        <tr>
-            <td><input type="checkbox" name="match_ids" value="{{ match.id }}"></td>
-            <td>{{ match.sport }}</td>
-            <td>{{ match.home_team }} vs {{ match.away_team }}</td>
-            <td>{{ match.venue }}</td>
-            <td>{{ match.get_status_display }}</td>
-            <td>
-                <form method="post" style="margin-bottom:6px;">
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="set_status">
-                    <input type="hidden" name="match_id" value="{{ match.id }}">
-                    <select name="status">
-                        <option value="scheduled">Scheduled</option>
-                        <option value="live">Live</option>
-                        <option value="finished">Finished</option>
-                    </select>
-                    <button type="submit">Update</button>
-                </form>
-                <form method="post">
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="delete">
-                    <input type="hidden" name="match_id" value="{{ match.id }}">
-                    <button type="submit">Delete</button>
-                </form>
-            </td>
-        </tr>
-    {% empty %}
-        <tr><td colspan="6">No matches yet.</td></tr>
-    {% endfor %}
-    </tbody>
-</table>
-</form>
+<section class="table-shell" data-reveal>
+    <div class="table-header">
+        <div>
+            <p class="eyebrow">Fixture registry</p>
+            <h2 class="section-heading">Manage matches</h2>
+        </div>
+    </div>
+    <div class="table-scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th>Sport</th>
+                    <th>Fixture</th>
+                    <th>Venue</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for match in matches %}
+                <tr>
+                    <td>{{ match.sport }}</td>
+                    <td>
+                        <span class="table-title">{{ match.home_team }} vs {{ match.away_team }}</span>
+                        <span class="table-meta">{{ match.start_time }}</span>
+                    </td>
+                    <td>{{ match.venue }}</td>
+                    <td><span class="status-badge {{ match.status }}">{{ match.get_status_display }}</span></td>
+                    <td>
+                        <div class="form-grid">
+                            <form method="post" class="form-grid">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="set_status">
+                                <input type="hidden" name="match_id" value="{{ match.id }}">
+                                <select name="status">
+                                    <option value="scheduled">Scheduled</option>
+                                    <option value="live">Live</option>
+                                    <option value="finished">Finished</option>
+                                </select>
+                                <button type="submit" class="secondary">Update</button>
+                            </form>
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="match_id" value="{{ match.id }}">
+                                <button type="submit" class="danger">Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5">No matches yet.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
 {% endblock %}

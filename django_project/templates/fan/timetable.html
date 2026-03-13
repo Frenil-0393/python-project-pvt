@@ -1,25 +1,74 @@
 {% extends 'shared/base.html' %}
+{% block title %}ScoreClub | Timetable{% endblock %}
 {% block content %}
-<h2>Fan - Match Timetable</h2>
-<form method="get" class="card">
-    <label>Filter by Sport</label>
-    <input name="sport" type="text" value="{{ sport }}" placeholder="e.g. Football">
-    <button type="submit">Apply Filter</button>
-</form>
-<table>
-    <thead><tr><th>Date/Time</th><th>Sport</th><th>Fixture</th><th>Venue</th><th>Status</th></tr></thead>
-    <tbody>
-    {% for match in matches %}
-        <tr>
-            <td>{{ match.start_time }}</td>
-            <td>{{ match.sport }}</td>
-            <td>{{ match.home_team }} vs {{ match.away_team }}</td>
-            <td>{{ match.venue }}</td>
-            <td>{{ match.get_status_display }}</td>
-        </tr>
-    {% empty %}
-        <tr><td colspan="5">No matches available.</td></tr>
-    {% endfor %}
-    </tbody>
-</table>
+<section class="hero-panel" data-reveal>
+    <div class="hero-copy">
+        <p class="eyebrow">Timetable view</p>
+        <h1>See the whole schedule at a glance.</h1>
+        <p>Filter by sport and move through the calendar with an interface built for quick scanning on desktop and mobile.</p>
+        <div class="badge-row">
+            <span class="chip">{{ match_count }} fixtures</span>
+            <span class="chip">{{ live_count }} currently live</span>
+        </div>
+    </div>
+    <div class="stack-card">
+        <div>
+            <p class="eyebrow">Filter</p>
+            <h2 class="section-heading">Sport selector</h2>
+        </div>
+        <form method="get" class="form-grid">
+            <div>
+                <label for="sport">Sport</label>
+                <select id="sport" name="sport">
+                    <option value="">All sports</option>
+                    {% for item in sports %}
+                    <option value="{{ item }}" {% if sport == item %}selected{% endif %}>{{ item }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-actions">
+                <button type="submit">Apply filter</button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<section class="table-shell" data-reveal>
+    <div class="table-header">
+        <div>
+            <p class="eyebrow">Fixture board</p>
+            <h2 class="section-heading">Upcoming and live matches</h2>
+        </div>
+    </div>
+    <div class="table-scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date/Time</th>
+                    <th>Sport</th>
+                    <th>Fixture</th>
+                    <th>Venue</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for match in matches %}
+                <tr>
+                    <td>{{ match.start_time }}</td>
+                    <td>{{ match.sport }}</td>
+                    <td>
+                        <span class="table-title">{{ match.home_team }} vs {{ match.away_team }}</span>
+                    </td>
+                    <td>{{ match.venue }}</td>
+                    <td><span class="status-badge {{ match.status }}">{{ match.get_status_display }}</span></td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5">No matches available.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
 {% endblock %}

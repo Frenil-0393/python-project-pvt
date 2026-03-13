@@ -1,40 +1,83 @@
 {% extends 'shared/base.html' %}
+{% block title %}ScoreClub | Highlights{% endblock %}
 {% block content %}
-<h2>Fan - Highlights</h2>
-<form method="get" class="card">
-    <label>Sort Highlights</label>
-    <select name="sort">
-        <option value="-published_at" {% if sort == '-published_at' %}selected{% endif %}>Newest</option>
-        <option value="-views" {% if sort == '-views' %}selected{% endif %}>Most Viewed</option>
-    </select>
-    <button type="submit">Apply</button>
-</form>
-<table>
-    <thead><tr><th>Title</th><th>Match</th><th>Duration</th><th>Views</th><th>Action</th></tr></thead>
-    <tbody>
-    {% for item in highlights %}
-        <tr>
-            <td>{{ item.title }}</td>
-            <td>{{ item.match.home_team }} vs {{ item.match.away_team }}</td>
-            <td>{{ item.duration }}</td>
-            <td>{{ item.views }}</td>
-            <td>
-                <form method="post">
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="view">
-                    <input type="hidden" name="highlight_id" value="{{ item.id }}">
-                    <button type="submit">View +1</button>
-                </form>
-            </td>
-        </tr>
-    {% empty %}
-        <tr><td colspan="5">No highlights published.</td></tr>
-    {% endfor %}
-    </tbody>
-</table>
-<div>
-    {% if highlights.has_previous %}<a href="?sort={{ sort }}&page={{ highlights.previous_page_number }}">Previous</a>{% endif %}
-    <span> Page {{ highlights.number }} of {{ highlights.paginator.num_pages }} </span>
-    {% if highlights.has_next %}<a href="?sort={{ sort }}&page={{ highlights.next_page_number }}">Next</a>{% endif %}
-</div>
+<section class="hero-panel" data-reveal>
+    <div class="hero-copy">
+        <p class="eyebrow">Highlight vault</p>
+        <h1>Replay the biggest moments.</h1>
+        <p>Browse the latest or the most-watched highlight packages with a layout that feels closer to a media app than a table.</p>
+        <div class="badge-row">
+            <span class="chip">{{ highlight_count }} total clips</span>
+            <span class="chip">Sorted by {{ sort }}</span>
+        </div>
+    </div>
+    <article class="stack-card">
+        <div>
+            <p class="eyebrow">Sort controls</p>
+            <h2 class="section-heading">Reorder the wall</h2>
+        </div>
+        <form method="get" class="form-grid">
+            <div>
+                <label for="sort">Sort highlights</label>
+                <select id="sort" name="sort">
+                    <option value="-published_at" {% if sort == '-published_at' %}selected{% endif %}>Newest</option>
+                    <option value="-views" {% if sort == '-views' %}selected{% endif %}>Most viewed</option>
+                </select>
+            </div>
+            <div class="form-actions">
+                <button type="submit">Apply</button>
+            </div>
+        </form>
+    </article>
+</section>
+
+{% if featured_highlight %}
+<section class="surface" data-reveal>
+    <div class="surface-header">
+        <div>
+            <p class="eyebrow">Featured replay</p>
+            <h2 class="section-heading">{{ featured_highlight.title }}</h2>
+            <p class="section-subtitle">{{ featured_highlight.match.home_team }} vs {{ featured_highlight.match.away_team }}</p>
+        </div>
+        <div class="badge-row">
+            <span class="chip">{{ featured_highlight.duration|default:'Replay clip' }}</span>
+            <span class="chip">{{ featured_highlight.views }} views</span>
+        </div>
+    </div>
+    <p class="rich-text">{{ featured_highlight.description|default:'A premium replay package from the latest action.' }}</p>
+</section>
+{% endif %}
+
+<section class="surface" data-reveal>
+    <div class="surface-header">
+        <div>
+            <p class="eyebrow">Clip wall</p>
+            <h2 class="section-heading">All published highlights</h2>
+        </div>
+    </div>
+    {% if highlights %}
+    <div class="media-wall">
+        {% for item in highlights %}
+        <article class="highlight-card">
+            <span class="chip">{{ item.duration|default:'Quick cut' }}</span>
+            <h3>{{ item.title }}</h3>
+            <p>{{ item.description|default:'Curated match moment available for replay.' }}</p>
+            <span class="list-meta">{{ item.match.home_team }} vs {{ item.match.away_team }} | {{ item.views }} views</span>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <h3>No highlights published</h3>
+        <p>Media uploads will appear in this wall when content is published.</p>
+    </div>
+    {% endif %}
+    <div class="pagination">
+        <div class="inline-actions">
+            {% if highlights.has_previous %}<a href="?sort={{ sort }}&page={{ highlights.previous_page_number }}" class="ghost-link pill">Previous</a>{% endif %}
+            {% if highlights.has_next %}<a href="?sort={{ sort }}&page={{ highlights.next_page_number }}" class="ghost-link pill">Next</a>{% endif %}
+        </div>
+        <span>Page {{ highlights.number }} of {{ highlights.paginator.num_pages }}</span>
+    </div>
+</section>
 {% endblock %}

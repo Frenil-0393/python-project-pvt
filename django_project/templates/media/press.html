@@ -1,75 +1,106 @@
 {% extends 'shared/base.html' %}
+{% block title %}ScoreClub | Press Room{% endblock %}
 {% block content %}
-<h2>Media - Press Room</h2>
-<p><a href="{% url 'media:export_press' %}">Export Press Releases CSV</a></p>
-<form method="post" class="card">
-    {% csrf_token %}
-    <label>Sport</label>
-    <input name="sport" type="text" required>
-    <label>Headline</label>
-    <input name="headline" type="text" required>
-    <label>Body</label>
-    <textarea name="body" rows="4" required></textarea>
-    <label>Status</label>
-    <select name="status">
-        <option value="draft">Draft</option>
-        <option value="published">Published</option>
-    </select>
-    <button type="submit">Save Press Release</button>
-</form>
+<section class="hero-panel" data-reveal>
+    <div class="hero-copy">
+        <p class="eyebrow">Press room</p>
+        <h1>Draft faster. Publish cleaner.</h1>
+        <p>Manage release copy with separate creation and filtering panels, then review everything as editorial cards instead of raw rows.</p>
+        <div class="badge-row">
+            <span class="chip">{{ press_count }} filtered releases</span>
+            <span class="chip">{{ published_count }} published in view</span>
+        </div>
+    </div>
+    <article class="stack-card">
+        <div>
+            <p class="eyebrow">Filter room</p>
+            <h2 class="section-heading">Review the archive</h2>
+        </div>
+        <form method="get" class="form-grid columns-2">
+            <div>
+                <label for="sport">Sport contains</label>
+                <input id="sport" name="sport" type="text" value="{{ sport_filter }}" placeholder="Cricket">
+            </div>
+            <div>
+                <label for="status">Status</label>
+                <select id="status" name="status">
+                    <option value="">All</option>
+                    <option value="draft" {% if status_filter == 'draft' %}selected{% endif %}>Draft</option>
+                    <option value="published" {% if status_filter == 'published' %}selected{% endif %}>Published</option>
+                </select>
+            </div>
+            <div class="form-actions span-12">
+                <button type="submit">Apply filters</button>
+            </div>
+        </form>
+    </article>
+</section>
 
-<h3>Filter Press Releases</h3>
-<form method="get" class="card">
-    <label>Sport Contains</label>
-    <input name="sport" type="text" value="{{ sport_filter }}" placeholder="Cricket">
-    <label>Status</label>
-    <select name="status">
-        <option value="">All</option>
-        <option value="draft" {% if status_filter == 'draft' %}selected{% endif %}>Draft</option>
-        <option value="published" {% if status_filter == 'published' %}selected{% endif %}>Published</option>
-    </select>
-    <label>Sort</label>
-    <select name="sort">
-        <option value="-created_at" {% if sort == '-created_at' %}selected{% endif %}>Newest</option>
-        <option value="created_at" {% if sort == 'created_at' %}selected{% endif %}>Oldest</option>
-        <option value="sport" {% if sort == 'sport' %}selected{% endif %}>Sport A-Z</option>
-        <option value="status" {% if sort == 'status' %}selected{% endif %}>Status</option>
-    </select>
-    <button type="submit">Apply Filters</button>
-</form>
+<section class="dashboard-grid" data-reveal>
+    <article class="surface span-5">
+        <div class="surface-header">
+            <div>
+                <p class="eyebrow">New release</p>
+                <h2 class="section-heading">Compose press note</h2>
+            </div>
+        </div>
+        <form method="post" class="form-grid">
+            {% csrf_token %}
+            <div>
+                <label for="sport_create">Sport</label>
+                <input id="sport_create" name="sport" type="text" required>
+            </div>
+            <div>
+                <label for="headline">Headline</label>
+                <input id="headline" name="headline" type="text" required>
+            </div>
+            <div>
+                <label for="body">Body</label>
+                <textarea id="body" name="body" rows="4" required></textarea>
+            </div>
+            <div>
+                <label for="status_create">Status</label>
+                <select id="status_create" name="status">
+                    <option value="draft">Draft</option>
+                    <option value="published">Published</option>
+                </select>
+            </div>
+            <div class="form-actions">
+                <button type="submit">Save press release</button>
+            </div>
+        </form>
+    </article>
 
-<h3>Press Releases</h3>
-<table>
-    <thead><tr><th>Sport</th><th>Headline</th><th>Status</th><th>Created</th><th>Action</th></tr></thead>
-    <tbody>
-    {% for item in press_releases %}
-        <tr>
-            <td>{{ item.sport }}</td>
-            <td>{{ item.headline }}</td>
-            <td>{{ item.get_status_display }}</td>
-            <td>{{ item.created_at }}</td>
-            <td>
-                <form method="post" style="margin-bottom:6px;">
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="set_status">
-                    <input type="hidden" name="press_id" value="{{ item.id }}">
-                    <select name="status">
-                        <option value="draft" {% if item.status == 'draft' %}selected{% endif %}>Draft</option>
-                        <option value="published" {% if item.status == 'published' %}selected{% endif %}>Published</option>
-                    </select>
-                    <button type="submit">Update</button>
-                </form>
+    <article class="surface span-7">
+        <div class="surface-header">
+            <div>
+                <p class="eyebrow">Release list</p>
+                <h2 class="section-heading">Press cards</h2>
+            </div>
+        </div>
+        {% if press_releases %}
+        <div class="media-wall">
+            {% for item in press_releases %}
+            <article class="press-card">
+                <span class="status-badge {% if item.status == 'published' %}live{% else %}scheduled{% endif %}">{{ item.get_status_display }}</span>
+                <h3>{{ item.headline }}</h3>
+                <p>{{ item.body|truncatechars:180 }}</p>
+                <span class="list-meta">{{ item.sport }} | {{ item.created_at }}</span>
                 <form method="post">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="delete">
                     <input type="hidden" name="press_id" value="{{ item.id }}">
-                    <button type="submit">Delete</button>
+                    <button type="submit" class="danger">Delete</button>
                 </form>
-            </td>
-        </tr>
-    {% empty %}
-        <tr><td colspan="5">No press releases yet.</td></tr>
-    {% endfor %}
-    </tbody>
-</table>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <h3>No press releases yet</h3>
+            <p>Draft or publish a release to build the editorial archive.</p>
+        </div>
+        {% endif %}
+    </article>
+</section>
 {% endblock %}

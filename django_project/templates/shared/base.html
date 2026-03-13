@@ -4,37 +4,96 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>{{ title|default:"Scoreclub" }}</title>
+    <title>{% block title %}{{ title|default:"ScoreClub Command Center" }}{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <script src="{% static 'js/main.js' %}" defer></script>
 </head>
-<body>
-<header class="topbar">
-    <div class="brand">Scoreclub.in</div>
-    <nav>
-        <a href="{% url 'login' %}">Login</a>
-        <a href="{% url 'register' %}">Register</a>
-        {% if user.is_authenticated and user.role == 'fan' %}
-        <a href="{% url 'fan:dashboard' %}">Fan</a>
-        {% elif user.is_authenticated and user.role == 'organizer' %}
-        <a href="{% url 'organizer:dashboard' %}">Organizer</a>
-        {% elif user.is_authenticated and user.role == 'media' %}
-        <a href="{% url 'media:dashboard' %}">Media</a>
-        {% endif %}
-        {% if user.is_authenticated %}
-        <a href="{% url 'profile' %}">Profile</a>
-        <a href="{% url 'logout' %}">Logout</a>
-        {% endif %}
-    </nav>
-</header>
-<main class="container">
-    {% if messages %}
-        <div class="messages">
-            {% for message in messages %}
-                <p class="message {{ message.tags }}">{{ message }}</p>
-            {% endfor %}
+<body class="app-body {% block body_class %}{% endblock %}">
+{% with current_ns=request.resolver_match.namespace current_name=request.resolver_match.url_name %}
+<div class="site-shell" data-spotlight>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+    <div class="ambient ambient-grid"></div>
+
+    <header class="site-header panel" data-reveal>
+        <a href="{% if user.is_authenticated %}{% if user.role == 'fan' %}{% url 'fan:dashboard' %}{% elif user.role == 'organizer' %}{% url 'organizer:dashboard' %}{% else %}{% url 'media:dashboard' %}{% endif %}{% else %}{% url 'login' %}{% endif %}" class="brandmark">
+            <span class="brandmark-badge">SC</span>
+            <span>
+                <strong>ScoreClub</strong>
+                <small>Live sport control platform</small>
+            </span>
+        </a>
+
+        <nav class="primary-nav">
+            {% if user.is_authenticated %}
+                <a href="{% url 'profile' %}" class="nav-link {% if current_name == 'profile' %}active{% endif %}">Profile</a>
+                {% if user.role == 'fan' %}
+                    <a href="{% url 'fan:dashboard' %}" class="nav-link {% if current_ns == 'fan' %}active{% endif %}">Fan Zone</a>
+                {% elif user.role == 'organizer' %}
+                    <a href="{% url 'organizer:dashboard' %}" class="nav-link {% if current_ns == 'organizer' %}active{% endif %}">Ops Suite</a>
+                {% else %}
+                    <a href="{% url 'media:dashboard' %}" class="nav-link {% if current_ns == 'media' %}active{% endif %}">Media Hub</a>
+                {% endif %}
+                <a href="{% url 'logout' %}" class="nav-link nav-link-ghost">Logout</a>
+            {% else %}
+                <a href="{% url 'login' %}" class="nav-link {% if current_name == 'login' %}active{% endif %}">Login</a>
+                <a href="{% url 'register' %}" class="nav-link nav-link-accent {% if current_name == 'register' %}active{% endif %}">Create Account</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    {% if user.is_authenticated %}
+    <section class="context-ribbon panel" data-reveal>
+        <div>
+            <p class="eyebrow">Active workspace</p>
+            <h2>{{ user.get_role_display }}</h2>
         </div>
+        <div class="pill-nav">
+            {% if user.role == 'fan' %}
+                <a href="{% url 'fan:dashboard' %}" class="pill {% if current_name == 'dashboard' and current_ns == 'fan' %}active{% endif %}">Overview</a>
+                <a href="{% url 'fan:live_scores' %}" class="pill {% if current_name == 'live_scores' %}active{% endif %}">Live Scores</a>
+                <a href="{% url 'fan:timetable' %}" class="pill {% if current_name == 'timetable' %}active{% endif %}">Timetable</a>
+                <a href="{% url 'fan:stats' %}" class="pill {% if current_name == 'stats' %}active{% endif %}">Stats</a>
+                <a href="{% url 'fan:leaderboard' %}" class="pill {% if current_name == 'leaderboard' %}active{% endif %}">Leaderboard</a>
+                <a href="{% url 'fan:highlights' %}" class="pill {% if current_name == 'highlights' %}active{% endif %}">Highlights</a>
+            {% elif user.role == 'organizer' %}
+                <a href="{% url 'organizer:dashboard' %}" class="pill {% if current_name == 'dashboard' and current_ns == 'organizer' %}active{% endif %}">Overview</a>
+                <a href="{% url 'organizer:schedule' %}" class="pill {% if current_name == 'schedule' %}active{% endif %}">Schedule</a>
+                <a href="{% url 'organizer:scores' %}" class="pill {% if current_name == 'scores' %}active{% endif %}">Scores</a>
+                <a href="{% url 'organizer:players' %}" class="pill {% if current_name == 'players' %}active{% endif %}">Players</a>
+            {% else %}
+                <a href="{% url 'media:dashboard' %}" class="pill {% if current_name == 'dashboard' and current_ns == 'media' %}active{% endif %}">Overview</a>
+                <a href="{% url 'media:broadcast' %}" class="pill {% if current_name == 'broadcast' %}active{% endif %}">Broadcast</a>
+                <a href="{% url 'media:highlights' %}" class="pill {% if current_name == 'highlights' %}active{% endif %}">Highlights</a>
+                <a href="{% url 'media:press' %}" class="pill {% if current_name == 'press' %}active{% endif %}">Press Room</a>
+            {% endif %}
+        </div>
+    </section>
     {% endif %}
-    {% block content %}{% endblock %}
-</main>
+
+    <main class="page-frame">
+        {% if messages %}
+        <section class="messages-stack" data-reveal>
+            {% for message in messages %}
+                <div class="message-banner {{ message.tags|default:'info' }}">{{ message }}</div>
+            {% endfor %}
+        </section>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer panel" data-reveal>
+        <div>
+            <p class="eyebrow">Realtime competition stack</p>
+            <h3>Built for fans, organizers, and media crews.</h3>
+        </div>
+        <p class="footer-copy">Unified scoreboards, storytelling, and match operations in one dashboard-driven experience.</p>
+    </footer>
+</div>
+{% endwith %}
 </body>
 </html>

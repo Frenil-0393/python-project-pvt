@@ -1,56 +1,107 @@
 {% extends 'shared/base.html' %}
+{% block title %}ScoreClub | Highlight Manager{% endblock %}
 {% block content %}
-<h2>Media - Highlights Manager</h2>
-<form method="get" class="card">
-    <label>Search Title</label>
-    <input name="q" type="text" value="{{ q }}" placeholder="Search highlight title">
-    <label>Sort</label>
-    <select name="sort">
-        <option value="-published_at" {% if sort == '-published_at' %}selected{% endif %}>Newest</option>
-        <option value="title" {% if sort == 'title' %}selected{% endif %}>Title A-Z</option>
-    </select>
-    <button type="submit">Apply</button>
-</form>
-<form method="post" class="card">
-    {% csrf_token %}
-    <label>Match</label>
-    <select name="match_id" required>
-        <option value="">Select match</option>
-        {% for match in matches %}
-        <option value="{{ match.id }}">{{ match.sport }}: {{ match.home_team }} vs {{ match.away_team }}</option>
-        {% endfor %}
-    </select>
-    <label>Title</label>
-    <input name="title" type="text" required>
-    <label>Description</label>
-    <input name="description" type="text">
-    <label>Duration</label>
-    <input name="duration" type="text" placeholder="05:20">
-    <button type="submit">Publish Highlight</button>
-</form>
+<section class="hero-panel" data-reveal>
+    <div class="hero-copy">
+        <p class="eyebrow">Highlight editor</p>
+        <h1>Package standout moments for every audience.</h1>
+        <p>Create replay cards, search your existing library, and maintain a cleaner highlight catalog than the previous table-only flow.</p>
+        <div class="badge-row">
+            <span class="chip">{{ highlight_count }} total highlights</span>
+            {% if q %}<span class="chip">Search: {{ q }}</span>{% endif %}
+        </div>
+    </div>
+    <article class="stack-card">
+        <div>
+            <p class="eyebrow">Library filter</p>
+            <h2 class="section-heading">Search and sort</h2>
+        </div>
+        <form method="get" class="form-grid">
+            <div>
+                <label for="q">Search title</label>
+                <input id="q" name="q" type="text" value="{{ q }}" placeholder="Search highlight title">
+            </div>
+            <div>
+                <label for="sort">Sort</label>
+                <select id="sort" name="sort">
+                    <option value="-published_at" {% if sort == '-published_at' %}selected{% endif %}>Newest</option>
+                    <option value="title" {% if sort == 'title' %}selected{% endif %}>Title A-Z</option>
+                </select>
+            </div>
+            <div class="form-actions">
+                <button type="submit">Apply</button>
+            </div>
+        </form>
+    </article>
+</section>
 
-<h3>Published Highlights</h3>
-<table>
-    <thead><tr><th>Title</th><th>Match</th><th>Duration</th><th>Published</th><th>Action</th></tr></thead>
-    <tbody>
-    {% for item in highlights %}
-        <tr>
-            <td>{{ item.title }}</td>
-            <td>{{ item.match.home_team }} vs {{ item.match.away_team }}</td>
-            <td>{{ item.duration }}</td>
-            <td>{{ item.published_at }}</td>
-            <td>
+<section class="dashboard-grid" data-reveal>
+    <article class="surface span-5">
+        <div class="surface-header">
+            <div>
+                <p class="eyebrow">Create highlight</p>
+                <h2 class="section-heading">Publish new clip</h2>
+            </div>
+        </div>
+        <form method="post" class="form-grid">
+            {% csrf_token %}
+            <div>
+                <label for="match_id">Match</label>
+                <select id="match_id" name="match_id" required>
+                    <option value="">Select match</option>
+                    {% for match in matches %}
+                    <option value="{{ match.id }}">{{ match.sport }}: {{ match.home_team }} vs {{ match.away_team }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="title">Title</label>
+                <input id="title" name="title" type="text" placeholder="Powerplay collapse in 90 seconds" required>
+            </div>
+            <div>
+                <label for="description">Description</label>
+                <input id="description" name="description" type="text" placeholder="Short editorial summary">
+            </div>
+            <div>
+                <label for="duration">Duration</label>
+                <input id="duration" name="duration" type="text" placeholder="05:20">
+            </div>
+            <div class="form-actions">
+                <button type="submit">Publish highlight</button>
+            </div>
+        </form>
+    </article>
+
+    <article class="surface span-7">
+        <div class="surface-header">
+            <div>
+                <p class="eyebrow">Published library</p>
+                <h2 class="section-heading">Highlight wall</h2>
+            </div>
+        </div>
+        {% if highlights %}
+        <div class="media-wall">
+            {% for item in highlights %}
+            <article class="highlight-card">
+                <span class="chip">{{ item.duration|default:'Clip' }}</span>
+                <h3>{{ item.title }}</h3>
+                <p>{{ item.description|default:'No description added.' }}</p>
+                <span class="list-meta">{{ item.match.home_team }} vs {{ item.match.away_team }} | {{ item.published_at }}</span>
                 <form method="post">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="delete">
                     <input type="hidden" name="highlight_id" value="{{ item.id }}">
-                    <button type="submit">Delete</button>
+                    <button type="submit" class="danger">Delete</button>
                 </form>
-            </td>
-        </tr>
-    {% empty %}
-        <tr><td colspan="5">No highlights yet.</td></tr>
-    {% endfor %}
-    </tbody>
-</table>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <h3>No highlights yet</h3>
+            <p>Publish your first highlight to start building the media wall.</p>
+        </div>
+        {% endif %}
+    </article>
+</section>
 {% endblock %}

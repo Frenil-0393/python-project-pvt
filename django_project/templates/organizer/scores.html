@@ -1,49 +1,88 @@
 {% extends 'shared/base.html' %}
+{% block title %}ScoreClub | Score Control{% endblock %}
 {% block content %}
-<h2>Organizer - Live Scores</h2>
-<form method="get" class="card">
-    <label>Search Match Team</label>
-    <input name="match" type="text" value="{{ match_search }}" placeholder="e.g. India">
-    <button type="submit">Search</button>
-</form>
-<form method="post" class="card">
-    {% csrf_token %}
-    <label>Match</label>
-    <select name="match_id" required>
-        <option value="">Select match</option>
-        {% for match in matches %}
-        <option value="{{ match.id }}">{{ match.sport }}: {{ match.home_team }} vs {{ match.away_team }}</option>
-        {% endfor %}
-    </select>
-    <label>Score Summary</label>
-    <input name="summary" type="text" placeholder="200/7 (19.4)" required>
-    <label>Status Note</label>
-    <input name="status_note" type="text" placeholder="LIVE | 88th Minute | FT">
-    <button type="submit">Update Score</button>
-</form>
+<section class="hero-panel" data-reveal>
+    <div class="hero-copy">
+        <p class="eyebrow">Live score push</p>
+        <h1>Send fast, clean updates into the fan feed.</h1>
+        <p>The organizer score board is optimized for repeated updates, deletions, and quick scanning of the latest entries.</p>
+        <div class="badge-row">
+            <span class="chip">{{ update_count }} score updates</span>
+            <span class="chip">{{ matches|length }} selectable matches</span>
+        </div>
+    </div>
+    <article class="stack-card">
+        <div>
+            <p class="eyebrow">New update</p>
+            <h2 class="section-heading">Publish score note</h2>
+        </div>
+        <form method="post" class="form-grid">
+            {% csrf_token %}
+            <div>
+                <label for="match_id">Match</label>
+                <select id="match_id" name="match_id" required>
+                    <option value="">Select match</option>
+                    {% for match in matches %}
+                    <option value="{{ match.id }}">{{ match.sport }}: {{ match.home_team }} vs {{ match.away_team }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="summary">Score summary</label>
+                <input id="summary" name="summary" type="text" placeholder="200/7 (19.4)" required>
+            </div>
+            <div>
+                <label for="status_note">Status note</label>
+                <input id="status_note" name="status_note" type="text" placeholder="LIVE | 88th minute | FT">
+            </div>
+            <div class="form-actions">
+                <button type="submit">Publish update</button>
+            </div>
+        </form>
+    </article>
+</section>
 
-<h3>Recent Updates</h3>
-<table>
-    <thead><tr><th>Match</th><th>Summary</th><th>Status</th><th>Time</th><th>Action</th></tr></thead>
-    <tbody>
-    {% for item in score_updates %}
-        <tr>
-            <td>{{ item.match.home_team }} vs {{ item.match.away_team }}</td>
-            <td>{{ item.summary }}</td>
-            <td>{{ item.status_note }}</td>
-            <td>{{ item.created_at }}</td>
-            <td>
-                <form method="post">
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="delete">
-                    <input type="hidden" name="update_id" value="{{ item.id }}">
-                    <button type="submit">Delete</button>
-                </form>
-            </td>
-        </tr>
-    {% empty %}
-        <tr><td colspan="5">No score updates yet.</td></tr>
-    {% endfor %}
-    </tbody>
-</table>
+<section class="table-shell" data-reveal>
+    <div class="table-header">
+        <div>
+            <p class="eyebrow">Update queue</p>
+            <h2 class="section-heading">Recent score updates</h2>
+        </div>
+    </div>
+    <div class="table-scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th>Match</th>
+                    <th>Summary</th>
+                    <th>Status</th>
+                    <th>Time</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for item in score_updates %}
+                <tr>
+                    <td>{{ item.match.home_team }} vs {{ item.match.away_team }}</td>
+                    <td>{{ item.summary }}</td>
+                    <td>{{ item.status_note|default:'Score update' }}</td>
+                    <td>{{ item.created_at }}</td>
+                    <td>
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="update_id" value="{{ item.id }}">
+                            <button type="submit" class="danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5">No score updates yet.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
 {% endblock %}

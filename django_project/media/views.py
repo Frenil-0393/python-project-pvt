@@ -1,7 +1,7 @@
 from django.contrib import messages
-from django.http import HttpResponse
+from django.urls import reverse
 from django.shortcuts import redirect, render
-import csv
+from urllib.parse import urlencode
 
 from common.decorators import role_required
 from media.models import BroadcastSession, Highlight, PressRelease
@@ -10,7 +10,23 @@ from organizer.models import Match
 
 @role_required("media")
 def dashboard(request):
-	return render(request, "media/dashboard.html", {"user_name": request.user.first_name or "Media"})
+	broadcasts = BroadcastSession.objects.select_related("match")
+	highlights = Highlight.objects.select_related("match")
+	press_releases = PressRelease.objects.all()
+	return render(
+		request,
+		"media/dashboard.html",
+		{
+			"user_name": request.user.first_name or "Media",
+			"broadcast_count": broadcasts.count(),
+			"live_broadcast_count": broadcasts.filter(is_live=True).count(),
+			"highlight_count": highlights.count(),
+			"press_count": press_releases.count(),
+			"recent_broadcasts": broadcasts[:4],
+			"recent_highlights": highlights[:4],
+			"recent_press": press_releases[:3],
+		},
+	)
 
 
 @role_required("media")
@@ -19,14 +35,17 @@ def broadcast_view(request):
 		action = request.POST.get("action", "create")
 		if action == "toggle":
 			broadcast_id = request.POST.get("broadcast_id")
+			sort = request.POST.get("sort", "-updated_at").strip() or "-updated_at"
+			next_state = request.POST.get("next_state", "").strip().lower()
 			item = BroadcastSession.objects.filter(id=broadcast_id).first()
 			if not item:
 				messages.error(request, "Broadcast not found.")
 			else:
-				item.is_live = not item.is_live
+				item.is_live = next_state == "true" if next_state in {"true", "false"} else not item.is_live
 				item.save(update_fields=["is_live", "updated_at"])
 				messages.success(request, "Broadcast live status updated.")
-			return redirect("media:broadcast")
+			query = urlencode({"sort": sort})
+			return redirect(f"{reverse('media:broadcast')}?{query}")
 
 		match_id = request.POST.get("match_id")
 		channel_name = request.POST.get("channel_name", "").strip()
@@ -48,11 +67,19 @@ def broadcast_view(request):
 		return redirect("media:broadcast")
 
 	sort = request.GET.get("sort", "-updated_at").strip() or "-updated_at"
-	if sort not in {"-updated_at", "channel_name"}:
-		sort = "-updated_at"
 	matches = Match.objects.all()
 	broadcasts = BroadcastSession.objects.select_related("match").order_by(sort)
-	return render(request, "media/broadcast.html", {"matches": matches, "broadcasts": broadcasts, "sort": sort})
+	return render(
+		request,
+		"media/broadcast.html",
+		{
+			"matches": matches,
+			"broadcasts": broadcasts,
+			"sort": sort,
+			"broadcast_count": broadcasts.count(),
+			"live_count": broadcasts.filter(is_live=True).count(),
+		},
+	)
 
 
 @role_required("media")
@@ -89,8 +116,6 @@ def highlights_view(request):
 
 	q = request.GET.get("q", "").strip()
 	sort = request.GET.get("sort", "-published_at").strip() or "-published_at"
-	if sort not in {"-published_at", "title"}:
-		sort = "-published_at"
 	matches = Match.objects.all()
 	highlights = Highlight.objects.select_related("match").all()
 	if q:
@@ -99,7 +124,13 @@ def highlights_view(request):
 	return render(
 		request,
 		"media/highlights.html",
-		{"matches": matches, "highlights": highlights, "q": q, "sort": sort},
+		{
+			"matches": matches,
+			"highlights": highlights,
+			"q": q,
+			"sort": sort,
+			"highlight_count": highlights.count(),
+		},
 	)
 
 
@@ -112,15 +143,6 @@ def press_view(request):
 			deleted, _ = PressRelease.objects.filter(id=press_id).delete()
 			if deleted:
 				messages.success(request, "Press release deleted.")
-			else:
-				messages.error(request, "Press release not found.")
-			return redirect("media:press")
-		if action == "set_status":
-			press_id = request.POST.get("press_id")
-			status = request.POST.get("status", PressRelease.STATUS_DRAFT)
-			updated = PressRelease.objects.filter(id=press_id).update(status=status)
-			if updated:
-				messages.success(request, "Press status updated.")
 			else:
 				messages.error(request, "Press release not found.")
 			return redirect("media:press")
@@ -140,15 +162,11 @@ def press_view(request):
 
 	status_filter = request.GET.get("status", "").strip()
 	sport_filter = request.GET.get("sport", "").strip()
-	sort = request.GET.get("sort", "-created_at").strip() or "-created_at"
-	if sort not in {"-created_at", "created_at", "sport", "status"}:
-		sort = "-created_at"
 	press_releases = PressRelease.objects.all()
 	if status_filter:
 		press_releases = press_releases.filter(status=status_filter)
 	if sport_filter:
 		press_releases = press_releases.filter(sport__icontains=sport_filter)
-	press_releases = press_releases.order_by(sort)
 	return render(
 		request,
 		"media/press.html",
@@ -156,17 +174,7 @@ def press_view(request):
 			"press_releases": press_releases,
 			"status_filter": status_filter,
 			"sport_filter": sport_filter,
-			"sort": sort,
+			"press_count": press_releases.count(),
+			"published_count": press_releases.filter(status=PressRelease.STATUS_PUBLISHED).count(),
 		},
 	)
-
-
-@role_required("media")
-def export_press_csv(request):
-	response = HttpResponse(content_type="text/csv")
-	response["Content-Disposition"] = 'attachment; filename="press_releases.csv"'
-	writer = csv.writer(response)
-	writer.writerow(["Sport", "Headline", "Status", "Created"])
-	for item in PressRelease.objects.all():
-		writer.writerow([item.sport, item.headline, item.status, item.created_at])
-	return response

@@ -1,8 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import PasswordChangeForm
-from django.contrib.auth import update_session_auth_hash
 from django.shortcuts import redirect, render
 
 from .forms import RegistrationForm
@@ -18,37 +16,20 @@ def _redirect_by_role(role: str):
 
 
 def login_view(request):
-	if request.user.is_authenticated:
-		return _redirect_by_role(request.user.role)
-
 	if request.method == "POST":
-		failed_attempts = request.session.get("failed_login_attempts", 0)
-		if failed_attempts >= 5:
-			messages.error(request, "Too many failed attempts. Please restart browser session.")
-			return render(request, "auth/login.html")
-
 		username = request.POST.get("username", "").strip()
 		password = request.POST.get("password", "")
 		role = request.POST.get("role", "")
 
 		user = authenticate(request, username=username, password=password)
 		if not user:
-			request.session["failed_login_attempts"] = failed_attempts + 1
-			remaining = max(0, 5 - (failed_attempts + 1))
 			messages.error(request, "Invalid username or password.")
-			if remaining:
-				messages.warning(request, f"Attempts left: {remaining}")
 			return render(request, "auth/login.html")
 
 		if user.role != role:
-			request.session["failed_login_attempts"] = failed_attempts + 1
-			remaining = max(0, 5 - (failed_attempts + 1))
 			messages.error(request, "Selected role does not match your account.")
-			if remaining:
-				messages.warning(request, f"Attempts left: {remaining}")
 			return render(request, "auth/login.html")
 
-		request.session["failed_login_attempts"] = 0
 		login(request, user)
 		return _redirect_by_role(user.role)
 
@@ -56,9 +37,6 @@ def login_view(request):
 
 
 def register_view(request):
-	if request.user.is_authenticated:
-		return _redirect_by_role(request.user.role)
-
 	if request.method == "POST":
 		form = RegistrationForm(request.POST)
 		if form.is_valid():
@@ -71,7 +49,6 @@ def register_view(request):
 
 
 def logout_view(request):
-	request.session["failed_login_attempts"] = 0
 	logout(request)
 	return redirect("login")
 
@@ -80,7 +57,7 @@ def logout_view(request):
 def profile_view(request):
 	if request.method == "POST":
 		full_name = request.POST.get("full_name", "").strip()
-		email = request.POST.get("email", "").strip().lower()
+		email = request.POST.get("email", "").strip()
 		if not full_name or not email:
 			messages.error(request, "Name and email are required.")
 			return redirect("profile")
@@ -92,19 +69,3 @@ def profile_view(request):
 		return redirect("profile")
 
 	return render(request, "auth/profile.html")
-
-
-@login_required
-def change_password_view(request):
-	if request.method == "POST":
-		form = PasswordChangeForm(request.user, request.POST)
-		if form.is_valid():
-			user = form.save()
-			update_session_auth_hash(request, user)
-			messages.success(request, "Password changed successfully.")
-			return redirect("profile")
-		messages.error(request, "Please correct the password form errors.")
-		return render(request, "auth/change_password.html", {"form": form})
-
-	form = PasswordChangeForm(request.user)
-	return render(request, "auth/change_password.html", {"form": form})

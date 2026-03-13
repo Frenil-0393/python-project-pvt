@@ -1,40 +1,78 @@
 {% extends 'shared/base.html' %}
 {% load static %}
+{% block title %}ScoreClub | Register{% endblock %}
 {% block content %}
-<h2>Create Account</h2>
-<form method="post" action="{% url 'register' %}" class="card">
-    {% csrf_token %}
-    {% if form.errors %}
-        <div class="message error">
-            Please fix the errors below and try again.
+<section class="auth-grid" data-reveal>
+    <article class="auth-panel">
+        <p class="eyebrow">Create your lane</p>
+        <h1>Open a fan, organizer, or media workspace in minutes.</h1>
+        <p>Each role unlocks a different control layer, from live match storytelling to operations and broadcast publishing.</p>
+        <div class="media-wall">
+            <div class="media-card">
+                <strong>Fan Zone</strong>
+                <p>Immersive scoreboards, highlights, and stat-driven leaderboards.</p>
+            </div>
+            <div class="media-card">
+                <strong>Ops Suite</strong>
+                <p>Fixtures, live score pushes, CSV exports, and player stat management.</p>
+            </div>
+            <div class="media-card">
+                <strong>Media Hub</strong>
+                <p>Broadcast channels, highlight publishing, and press workflow control.</p>
+            </div>
         </div>
-    {% endif %}
-    {{ form.non_field_errors }}
+    </article>
 
-    <label>Username</label>
-    {{ form.username }}
-    {{ form.username.errors }}
+    <article class="auth-panel">
+        <div class="surface-header">
+            <div>
+                <p class="eyebrow">Registration</p>
+                <h2 class="section-heading">Create account</h2>
+                <p class="section-subtitle">Set up your identity and choose the workspace you want to use.</p>
+            </div>
+        </div>
+        <form method="post" action="{% url 'register' %}" class="form-grid">
+            {% csrf_token %}
+            {% if form.errors %}
+                <div class="message-banner error">Please fix the highlighted fields and try again.</div>
+            {% endif %}
+            {{ form.non_field_errors }}
 
-    <label>Full Name</label>
-    {{ form.full_name }}
-    {{ form.full_name.errors }}
-
-    <label>Email</label>
-    {{ form.email }}
-    {{ form.email.errors }}
-
-    <label>User Role</label>
-    {{ form.role }}
-    {{ form.role.errors }}
-
-    <label>Password</label>
-    {{ form.password1 }}
-    {{ form.password1.errors }}
-
-    <label>Confirm Password</label>
-    {{ form.password2 }}
-    {{ form.password2.errors }}
-
-    <button type="submit">Register</button>
-</form>
+            <div>
+                <label>Username</label>
+                {{ form.username }}
+                {{ form.username.errors }}
+            </div>
+            <div>
+                <label>Full Name</label>
+                {{ form.full_name }}
+                {{ form.full_name.errors }}
+            </div>
+            <div>
+                <label>Email</label>
+                {{ form.email }}
+                {{ form.email.errors }}
+            </div>
+            <div>
+                <label>User Role</label>
+                {{ form.role }}
+                {{ form.role.errors }}
+            </div>
+            <div>
+                <label>Password</label>
+                {{ form.password1 }}
+                {{ form.password1.errors }}
+            </div>
+            <div>
+                <label>Confirm Password</label>
+                {{ form.password2 }}
+                {{ form.password2.errors }}
+            </div>
+            <div class="form-actions">
+                <button type="submit">Create account</button>
+                <a href="{% url 'login' %}" class="button secondary">Back to login</a>
+            </div>
+        </form>
+    </article>
+</section>
 {% endblock %}

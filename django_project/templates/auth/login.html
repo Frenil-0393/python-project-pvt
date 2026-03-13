@@ -1,22 +1,76 @@
 {% extends 'shared/base.html' %}
 {% load static %}
+{% block title %}ScoreClub | Login{% endblock %}
 {% block content %}
-<h2>System Login</h2>
-<form method="post" action="{% url 'login' %}" class="card">
-    {% csrf_token %}
-    <label>Username</label>
-    <input name="username" type="text" required>
+<section class="auth-grid" data-reveal>
+    <article class="auth-panel">
+        <p class="eyebrow">Live sports experience</p>
+        <h1>Run matchday from one cinematic dashboard.</h1>
+        <p>ScoreClub combines live score control, media publishing, and fan updates into one fast, high-clarity interface.</p>
+        <div class="badge-row">
+            <span class="chip">Real-time score control</span>
+            <span class="chip">Broadcast workflows</span>
+            <span class="chip">Mobile-first layout</span>
+        </div>
+        <div class="stack-card demo-access-card">
+            <div class="surface-header">
+                <div>
+                    <h2 class="section-heading">Demo access</h2>
+                    <p class="section-subtitle">Use these seeded users for local testing.</p>
+                </div>
+            </div>
+            <ul class="content-list">
+                <li class="content-item">
+                    <strong>Fan</strong>
+                    <span class="list-meta">Username: fan_demo</span>
+                </li>
+                <li class="content-item">
+                    <strong>Organizer</strong>
+                    <span class="list-meta">Username: organizer_demo</span>
+                </li>
+                <li class="content-item">
+                    <strong>Media</strong>
+                    <span class="list-meta">Username: media_demo</span>
+                </li>
+            </ul>
+            <p class="list-meta">Shared password for demo users: demo12345</p>
+        </div>
+    </article>
 
-    <label>Password</label>
-    <input name="password" type="password" required>
-
-    <label>Select Role</label>
-    <select name="role" required>
-        <option value="fan">Sport Fan</option>
-        <option value="organizer">Organizer</option>
-        <option value="media">Media & Broadcast</option>
-    </select>
-
-    <button type="submit">Login</button>
-</form>
+    <article class="auth-panel">
+        <div class="surface-header">
+            <div>
+                <p class="eyebrow">Access portal</p>
+                <h2 class="section-heading">Sign in</h2>
+                <p class="section-subtitle">Choose the correct role to enter the matching workspace.</p>
+            </div>
+        </div>
+        <form method="post" action="{% url 'login' %}" class="form-grid">
+            {% csrf_token %}
+            <div>
+                <label for="username">Username</label>
+                <input id="username" name="username" type="text" placeholder="Enter your username" required>
+            </div>
+            <div>
+                <label for="password">Password</label>
+                <input id="password" name="password" type="password" placeholder="Enter your password" required>
+            </div>
+            <div>
+                <label for="role">Select role</label>
+                <select id="role" name="role" required>
+                    <option value="fan">Sport Fan</option>
+                    <option value="organizer">Organizer</option>
+                    <option value="media">Media &amp; Broadcast</option>
+                </select>
+            </div>
+            <div class="form-actions">
+                <button type="submit">Enter workspace</button>
+                <a href="{% url 'register' %}" class="button secondary">Create account</a>
+            </div>
+        </form>
+        <div class="media-visual">
+            <img src="{% static 'img/hero-orbit.svg' %}" alt="Abstract live sports control artwork">
+        </div>
+    </article>
+</section>
 {% endblock %}

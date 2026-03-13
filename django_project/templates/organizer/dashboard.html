@@ -1,25 +1,119 @@
 {% extends 'shared/base.html' %}
+{% load static %}
+{% block title %}ScoreClub | Organizer Dashboard{% endblock %}
 {% block content %}
-<h2>Organizer Dashboard</h2>
-<p>Welcome, {{ user_name }}.</p>
-<table>
-    <thead><tr><th>Total Matches</th><th>Live Matches</th><th>Upcoming</th><th>Score Updates</th><th>Player Stats</th></tr></thead>
-    <tbody>
-        <tr>
-            <td>{{ total_matches }}</td>
-            <td>{{ live_matches }}</td>
-            <td>{{ upcoming_matches }}</td>
-            <td>{{ total_score_updates }}</td>
-            <td>{{ total_player_stats }}</td>
-        </tr>
-    </tbody>
-</table>
-<ul>
-    <li><a href="{% url 'organizer:schedule' %}">Manage Schedule</a></li>
-    <li><a href="{% url 'organizer:scores' %}">Update Live Scores</a></li>
-    <li><a href="{% url 'organizer:players' %}">Manage Player Stats</a></li>
-    <li><a href="{% url 'organizer:export_matches' %}">Export Matches CSV</a></li>
-    <li><a href="{% url 'organizer:export_scores' %}">Export Scores CSV</a></li>
-    <li><a href="{% url 'organizer:export_players' %}">Export Player Stats CSV</a></li>
-</ul>
+<section class="hero-panel" data-reveal>
+    <div class="hero-copy">
+        <p class="eyebrow">Operations suite</p>
+        <h1>Run fixtures, scoring, and player data from one control deck.</h1>
+        <p>Move between schedule management, live score updates, and player-performance tracking with a layout built for high-frequency operator work.</p>
+        <div class="dashboard-links">
+            <a href="{% url 'organizer:schedule' %}" class="button">Manage fixtures</a>
+            <a href="{% url 'organizer:scores' %}" class="button secondary">Push score updates</a>
+        </div>
+    </div>
+    <div class="hero-visual">
+        <img src="{% static 'img/score-wave.svg' %}" alt="Operations analytics artwork">
+    </div>
+</section>
+
+<section class="metric-grid" data-reveal>
+    <article class="metric-card">
+        <h3>Total matches</h3>
+        <p class="metric-value" data-count-to="{{ total_matches }}">0</p>
+        <p class="metric-footnote">All fixtures in the schedule</p>
+    </article>
+    <article class="metric-card">
+        <h3>Live matches</h3>
+        <p class="metric-value" data-count-to="{{ live_matches }}">0</p>
+        <p class="metric-footnote">Fixtures actively in play</p>
+    </article>
+    <article class="metric-card">
+        <h3>Score updates</h3>
+        <p class="metric-value" data-count-to="{{ total_score_updates }}">0</p>
+        <p class="metric-footnote">Messages sent to the feed</p>
+    </article>
+    <article class="metric-card">
+        <h3>Player stats</h3>
+        <p class="metric-value" data-count-to="{{ total_player_stats }}">0</p>
+        <p class="metric-footnote">Tracked stat entries</p>
+    </article>
+</section>
+
+<section class="dashboard-grid" data-reveal>
+    <article class="surface span-5">
+        <div class="surface-header">
+            <div>
+                <p class="eyebrow">Recent fixtures</p>
+                <h2 class="section-heading">Match slate</h2>
+            </div>
+        </div>
+        {% if recent_matches %}
+        <ul class="timeline-list">
+            {% for match in recent_matches %}
+            <li class="timeline-entry">
+                <span class="status-badge {{ match.status }}">{{ match.get_status_display }}</span>
+                <strong>{{ match.home_team }} vs {{ match.away_team }}</strong>
+                <p>{{ match.sport }} | {{ match.venue }}</p>
+                <span class="timeline-meta">{{ match.start_time }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="empty-state">
+            <h3>No fixtures yet</h3>
+            <p>Create a schedule entry to populate the operations board.</p>
+        </div>
+        {% endif %}
+    </article>
+
+    <article class="surface span-7">
+        <div class="surface-header">
+            <div>
+                <p class="eyebrow">Control shortcuts</p>
+                <h2 class="section-heading">Export and manage</h2>
+            </div>
+        </div>
+        <div class="dashboard-links">
+            <a href="{% url 'organizer:players' %}" class="button secondary">Manage player stats</a>
+            <a href="{% url 'organizer:export_matches' %}" class="ghost-link pill">Export matches CSV</a>
+            <a href="{% url 'organizer:export_scores' %}" class="ghost-link pill">Export scores CSV</a>
+            <a href="{% url 'organizer:export_players' %}" class="ghost-link pill">Export player stats CSV</a>
+        </div>
+        <div class="dashboard-grid">
+            <div class="stack-card span-6">
+                <p class="eyebrow">Recent score flow</p>
+                {% if recent_score_updates %}
+                <ul class="timeline-list">
+                    {% for item in recent_score_updates %}
+                    <li class="timeline-entry">
+                        <strong>{{ item.summary }}</strong>
+                        <p>{{ item.match.home_team }} vs {{ item.match.away_team }}</p>
+                        <span class="timeline-meta">{{ item.status_note|default:'Score update' }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p>No score updates yet.</p>
+                {% endif %}
+            </div>
+            <div class="stack-card span-6">
+                <p class="eyebrow">Recent player metrics</p>
+                {% if recent_player_stats %}
+                <ul class="timeline-list">
+                    {% for item in recent_player_stats %}
+                    <li class="timeline-entry">
+                        <strong>{{ item.player_name }}</strong>
+                        <p>{{ item.metric_name }}: {{ item.metric_value }}</p>
+                        <span class="timeline-meta">{{ item.team_name }} | {{ item.availability }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p>No player stats yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </article>
+</section>
 {% endblock %}

@@ -2,7 +2,6 @@ from django.contrib import messages
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
-from django.db.models import Q
 import csv
 
 from common.decorators import role_required
@@ -15,9 +14,11 @@ def dashboard(request):
 		"user_name": request.user.first_name or "Organizer",
 		"total_matches": Match.objects.count(),
 		"live_matches": Match.objects.filter(status=Match.STATUS_LIVE).count(),
-		"upcoming_matches": Match.objects.filter(status=Match.STATUS_SCHEDULED).count(),
 		"total_score_updates": ScoreUpdate.objects.count(),
 		"total_player_stats": PlayerStat.objects.count(),
+		"recent_matches": Match.objects.order_by("-start_time")[:4],
+		"recent_score_updates": ScoreUpdate.objects.select_related("match")[:4],
+		"recent_player_stats": PlayerStat.objects.select_related("match").order_by("-updated_at")[:4],
 	}
 	return render(request, "organizer/dashboard.html", context)
 
@@ -43,15 +44,6 @@ def schedule_view(request):
 			else:
 				messages.error(request, "Match not found.")
 			return redirect("organizer:schedule")
-		if action == "bulk_status":
-			status = request.POST.get("status", Match.STATUS_SCHEDULED)
-			ids = request.POST.getlist("match_ids")
-			if not ids:
-				messages.error(request, "Select at least one match for bulk update.")
-				return redirect("organizer:schedule")
-			updated = Match.objects.filter(id__in=ids).update(status=status)
-			messages.success(request, f"Updated status for {updated} matches.")
-			return redirect("organizer:schedule")
 
 		sport = request.POST.get("sport", "").strip()
 		home_team = request.POST.get("home_team", "").strip()
@@ -70,16 +62,6 @@ def schedule_view(request):
 			messages.error(request, "Invalid date/time format.")
 			return redirect("organizer:schedule")
 
-		exists = Match.objects.filter(
-			sport=sport,
-			home_team=home_team,
-			away_team=away_team,
-			start_time=start_time,
-		).exists()
-		if exists:
-			messages.error(request, "Duplicate fixture exists for same sport/teams/time.")
-			return redirect("organizer:schedule")
-
 		Match.objects.create(
 			sport=sport,
 			home_team=home_team,
@@ -91,17 +73,16 @@ def schedule_view(request):
 		messages.success(request, "Match fixture created.")
 		return redirect("organizer:schedule")
 
-	sport = request.GET.get("sport", "").strip()
-	status_filter = request.GET.get("status", "").strip()
 	matches = Match.objects.all()
-	if sport:
-		matches = matches.filter(sport__icontains=sport)
-	if status_filter:
-		matches = matches.filter(status=status_filter)
 	return render(
 		request,
 		"organizer/schedule.html",
-		{"matches": matches, "sport": sport, "status_filter": status_filter},
+		{
+			"matches": matches,
+			"match_count": matches.count(),
+			"scheduled_count": matches.filter(status=Match.STATUS_SCHEDULED).count(),
+			"live_count": matches.filter(status=Match.STATUS_LIVE).count(),
+		},
 	)
 
 
@@ -140,20 +121,15 @@ def scores_view(request):
 		messages.success(request, "Score updated successfully.")
 		return redirect("organizer:scores")
 
-	match_search = request.GET.get("match", "").strip()
 	matches = Match.objects.all()
 	score_updates = ScoreUpdate.objects.select_related("match").all()
-	if match_search:
-		score_updates = score_updates.filter(
-			Q(match__home_team__icontains=match_search) | Q(match__away_team__icontains=match_search)
-		)
 	return render(
 		request,
 		"organizer/scores.html",
 		{
 			"matches": matches,
 			"score_updates": score_updates,
-			"match_search": match_search,
+			"update_count": score_updates.count(),
 		},
 	)
 
@@ -187,35 +163,26 @@ def players_view(request):
 			messages.error(request, "Invalid match selected.")
 			return redirect("organizer:players")
 
-		obj, created = PlayerStat.objects.update_or_create(
+		PlayerStat.objects.create(
 			match=match,
 			player_name=player_name,
+			team_name=team_name,
 			metric_name=metric_name,
-			defaults={
-				"team_name": team_name,
-				"metric_value": metric_value,
-				"availability": availability,
-			},
+			metric_value=metric_value,
+			availability=availability,
 		)
-		messages.success(request, "Player stat created." if created else "Player stat updated.")
+		messages.success(request, "Player stats updated.")
 		return redirect("organizer:players")
 
-	team_filter = request.GET.get("team", "").strip()
-	metric_filter = request.GET.get("metric", "").strip()
 	matches = Match.objects.all()
 	player_stats = PlayerStat.objects.select_related("match").all()
-	if team_filter:
-		player_stats = player_stats.filter(team_name__icontains=team_filter)
-	if metric_filter:
-		player_stats = player_stats.filter(metric_name__icontains=metric_filter)
 	return render(
 		request,
 		"organizer/players.html",
 		{
 			"matches": matches,
 			"player_stats": player_stats,
-			"team_filter": team_filter,
-			"metric_filter": metric_filter,
+			"player_count": player_stats.count(),
 		},
 	)
 

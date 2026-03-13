@@ -1,31 +1,94 @@
 {% extends 'shared/base.html' %}
+{% block title %}ScoreClub | Leaderboard{% endblock %}
 {% block content %}
-<h2>Fan - Leaderboard</h2>
-<form method="get" class="card">
-    <label>Metric</label>
-    <input name="metric" type="text" value="{{ metric }}" placeholder="runs / goals / wickets">
-    <label>Order</label>
-    <select name="order">
-        <option value="desc" {% if order == 'desc' %}selected{% endif %}>Highest First</option>
-        <option value="asc" {% if order == 'asc' %}selected{% endif %}>Lowest First</option>
-    </select>
-    <button type="submit">Show Leaderboard</button>
-</form>
+<section class="hero-panel" data-reveal>
+    <div class="hero-copy">
+        <p class="eyebrow">Leaderboard engine</p>
+        <h1>Who’s leading {{ metric }} right now?</h1>
+        <p>Switch metrics instantly and compare top performers across the active event dataset.</p>
+        <div class="badge-row">
+            <span class="chip">{{ leader_count }} ranked entries</span>
+            <span class="chip">Current metric: {{ metric }}</span>
+        </div>
+    </div>
+    <article class="stack-card">
+        <div>
+            <p class="eyebrow">Metric picker</p>
+            <h2 class="section-heading">Change ranking type</h2>
+        </div>
+        <form method="get" class="form-grid">
+            <div>
+                <label for="metric">Metric</label>
+                <select id="metric" name="metric">
+                    {% for item in metrics %}
+                    <option value="{{ item }}" {% if metric|lower == item|lower %}selected{% endif %}>{{ item }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-actions">
+                <button type="submit">Refresh leaderboard</button>
+            </div>
+        </form>
+    </article>
+</section>
 
-<table>
-    <thead><tr><th>Player</th><th>Team</th><th>Metric</th><th>Value</th><th>Match</th></tr></thead>
-    <tbody>
-    {% for item in stats %}
-        <tr>
-            <td>{{ item.player_name }}</td>
-            <td>{{ item.team_name }}</td>
-            <td>{{ item.metric_name }}</td>
-            <td>{{ item.metric_value }}</td>
-            <td>{{ item.match.home_team }} vs {{ item.match.away_team }}</td>
-        </tr>
-    {% empty %}
-        <tr><td colspan="5">No leaderboard data available.</td></tr>
-    {% endfor %}
-    </tbody>
-</table>
+<section class="dashboard-grid" data-reveal>
+    <article class="surface span-12">
+        {% if stats %}
+        <div class="leader-grid">
+            {% for item in stats|slice:":3" %}
+            <article class="leader-card">
+                <p class="eyebrow">Top {{ forloop.counter }}</p>
+                <h3>{{ item.player_name }}</h3>
+                <p>{{ item.team_name }}</p>
+                <div class="number-kicker">{{ item.metric_value }}</div>
+                <span class="list-meta">{{ item.metric_name }} | {{ item.match.home_team }} vs {{ item.match.away_team }}</span>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <h3>No leaderboard data</h3>
+            <p>Try a different metric or seed demo stats to populate the rankings.</p>
+        </div>
+        {% endif %}
+    </article>
+
+    <article class="table-shell span-12">
+        <div class="table-header">
+            <div>
+                <p class="eyebrow">Full ranking</p>
+                <h2 class="section-heading">Leaderboard table</h2>
+            </div>
+        </div>
+        <div class="table-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Player</th>
+                        <th>Team</th>
+                        <th>Metric</th>
+                        <th>Value</th>
+                        <th>Match</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for item in stats %}
+                    <tr>
+                        <td>{{ item.player_name }}</td>
+                        <td>{{ item.team_name }}</td>
+                        <td>{{ item.metric_name }}</td>
+                        <td>{{ item.metric_value }}</td>
+                        <td>{{ item.match.home_team }} vs {{ item.match.away_team }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5">No leaderboard data available.</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+</section>
 {% endblock %}

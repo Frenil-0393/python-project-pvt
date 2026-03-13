@@ -1,53 +1,117 @@
 {% extends 'shared/base.html' %}
+{% block title %}ScoreClub | Broadcast Hub{% endblock %}
 {% block content %}
-<h2>Media - Broadcast Hub</h2>
-<form method="get" class="card">
-    <label>Sort Broadcasts</label>
-    <select name="sort">
-        <option value="-updated_at" {% if sort == '-updated_at' %}selected{% endif %}>Recently Updated</option>
-        <option value="channel_name" {% if sort == 'channel_name' %}selected{% endif %}>Channel A-Z</option>
-    </select>
-    <button type="submit">Apply</button>
-</form>
-<form method="post" class="card">
-    {% csrf_token %}
-    <label>Match</label>
-    <select name="match_id" required>
-        <option value="">Select match</option>
-        {% for match in matches %}
-        <option value="{{ match.id }}">{{ match.sport }}: {{ match.home_team }} vs {{ match.away_team }}</option>
-        {% endfor %}
-    </select>
-    <label>Channel Name</label>
-    <input name="channel_name" type="text" required>
-    <label>Stream URL</label>
-    <input name="stream_url" type="url">
-    <label><input type="checkbox" name="is_live"> Is Live</label>
-    <button type="submit">Save Broadcast Session</button>
-</form>
+<section class="hero-panel" data-reveal>
+    <div class="hero-copy">
+        <p class="eyebrow">Broadcast control</p>
+        <h1>Manage channels, match links, and live state.</h1>
+        <p>Use the filter panel to reorder the slate, then add or toggle sessions without leaving the broadcast board.</p>
+        <div class="badge-row">
+            <span class="chip">{{ broadcast_count }} sessions</span>
+            <span class="chip">{{ live_count }} live right now</span>
+        </div>
+    </div>
+    <article class="stack-card">
+        <div>
+            <p class="eyebrow">Sort panel</p>
+            <h2 class="section-heading">Session order</h2>
+        </div>
+        <form method="get" class="form-grid">
+            <div>
+                <label for="sort">Sort broadcasts</label>
+                <select id="sort" name="sort">
+                    <option value="-updated_at" {% if sort == '-updated_at' %}selected{% endif %}>Recently updated</option>
+                    <option value="channel_name" {% if sort == 'channel_name' %}selected{% endif %}>Channel A-Z</option>
+                </select>
+            </div>
+            <div class="form-actions">
+                <button type="submit">Apply sort</button>
+            </div>
+        </form>
+    </article>
+</section>
 
-<h3>Broadcast Sessions</h3>
-<table>
-    <thead><tr><th>Channel</th><th>Match</th><th>Live</th><th>Updated</th><th>Action</th></tr></thead>
-    <tbody>
-    {% for item in broadcasts %}
-        <tr>
-            <td>{{ item.channel_name }}</td>
-            <td>{{ item.match.home_team }} vs {{ item.match.away_team }}</td>
-            <td>{% if item.is_live %}ON AIR{% else %}OFFLINE{% endif %}</td>
-            <td>{{ item.updated_at }}</td>
-            <td>
-                <form method="post">
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="toggle">
-                    <input type="hidden" name="broadcast_id" value="{{ item.id }}">
-                    <button type="submit">Toggle Live</button>
-                </form>
-            </td>
-        </tr>
-    {% empty %}
-        <tr><td colspan="5">No broadcast sessions yet.</td></tr>
-    {% endfor %}
-    </tbody>
-</table>
+<section class="dashboard-grid" data-reveal>
+    <article class="surface span-5">
+        <div class="surface-header">
+            <div>
+                <p class="eyebrow">Create session</p>
+                <h2 class="section-heading">New broadcast</h2>
+            </div>
+        </div>
+        <form method="post" class="form-grid">
+            {% csrf_token %}
+            <div>
+                <label for="match_id">Match</label>
+                <select id="match_id" name="match_id" required>
+                    <option value="">Select match</option>
+                    {% for match in matches %}
+                    <option value="{{ match.id }}">{{ match.sport }}: {{ match.home_team }} vs {{ match.away_team }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="channel_name">Channel name</label>
+                <input id="channel_name" name="channel_name" type="text" placeholder="Prime Arena Live" required>
+            </div>
+            <div>
+                <label for="stream_url">Stream URL</label>
+                <input id="stream_url" name="stream_url" type="url" placeholder="https://example.com/live-feed">
+            </div>
+            <label class="checkbox-row"><input type="checkbox" name="is_live"> Mark channel live on save</label>
+            <div class="form-actions">
+                <button type="submit">Save session</button>
+            </div>
+        </form>
+    </article>
+
+    <article class="table-shell span-7">
+        <div class="table-header">
+            <div>
+                <p class="eyebrow">Control list</p>
+                <h2 class="section-heading">Broadcast sessions</h2>
+            </div>
+        </div>
+        <div class="table-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Channel</th>
+                        <th>Match</th>
+                        <th>Live</th>
+                        <th>Updated</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for item in broadcasts %}
+                    <tr>
+                        <td>
+                            <span class="table-title">{{ item.channel_name }}</span>
+                            <span class="table-meta">{{ item.stream_url|default:'No stream URL added' }}</span>
+                        </td>
+                        <td>{{ item.match.home_team }} vs {{ item.match.away_team }}</td>
+                        <td><span class="status-badge {% if item.is_live %}live{% else %}finished{% endif %}">{% if item.is_live %}On air{% else %}Offline{% endif %}</span></td>
+                        <td>{{ item.updated_at }}</td>
+                        <td>
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="toggle">
+                                <input type="hidden" name="broadcast_id" value="{{ item.id }}">
+                                <input type="hidden" name="sort" value="{{ sort }}">
+                                <input type="hidden" name="next_state" value="{% if item.is_live %}false{% else %}true{% endif %}">
+                                <button type="submit" class="secondary">{% if item.is_live %}Take offline{% else %}Go live{% endif %}</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5">No broadcast sessions yet.</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+</section>
 {% endblock %}

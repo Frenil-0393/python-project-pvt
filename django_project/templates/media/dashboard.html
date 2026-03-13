@@ -1,10 +1,122 @@
 {% extends 'shared/base.html' %}
+{% load static %}
+{% block title %}ScoreClub | Media Dashboard{% endblock %}
 {% block content %}
-<h2>Media Dashboard</h2>
-<p>Welcome, {{ user_name }}.</p>
-<ul>
-    <li><a href="{% url 'media:broadcast' %}">Broadcast Hub</a></li>
-    <li><a href="{% url 'media:highlights' %}">Highlight Manager</a></li>
-    <li><a href="{% url 'media:press' %}">Press Room</a></li>
-</ul>
+<section class="hero-panel" data-reveal>
+    <div class="hero-copy">
+        <p class="eyebrow">Media hub</p>
+        <h1>Publish the story behind the scoreboard.</h1>
+        <p>Coordinate live broadcasts, package highlight moments, and send polished press updates from one production-ready workspace.</p>
+        <div class="dashboard-links">
+            <a href="{% url 'media:broadcast' %}" class="button">Open broadcast hub</a>
+            <a href="{% url 'media:press' %}" class="button secondary">Manage press room</a>
+        </div>
+    </div>
+    <div class="hero-visual">
+        <img src="{% static 'img/hero-orbit.svg' %}" alt="Abstract broadcast dashboard artwork">
+    </div>
+</section>
+
+<section class="metric-grid" data-reveal>
+    <article class="metric-card">
+        <h3>Broadcast sessions</h3>
+        <p class="metric-value" data-count-to="{{ broadcast_count }}">0</p>
+        <p class="metric-footnote">Channels linked to matches</p>
+    </article>
+    <article class="metric-card">
+        <h3>Live channels</h3>
+        <p class="metric-value" data-count-to="{{ live_broadcast_count }}">0</p>
+        <p class="metric-footnote">Currently on air</p>
+    </article>
+    <article class="metric-card">
+        <h3>Highlights</h3>
+        <p class="metric-value" data-count-to="{{ highlight_count }}">0</p>
+        <p class="metric-footnote">Published replay assets</p>
+    </article>
+    <article class="metric-card">
+        <h3>Press releases</h3>
+        <p class="metric-value" data-count-to="{{ press_count }}">0</p>
+        <p class="metric-footnote">Editorial records in the room</p>
+    </article>
+</section>
+
+<section class="dashboard-grid" data-reveal>
+    <article class="surface span-5">
+        <div class="surface-header">
+            <div>
+                <p class="eyebrow">Broadcast board</p>
+                <h2 class="section-heading">Recent sessions</h2>
+            </div>
+        </div>
+        {% if recent_broadcasts %}
+        <ul class="timeline-list">
+            {% for item in recent_broadcasts %}
+            <li class="timeline-entry">
+                <span class="status-badge {% if item.is_live %}live{% else %}finished{% endif %}">{% if item.is_live %}On air{% else %}Offline{% endif %}</span>
+                <strong>{{ item.channel_name }}</strong>
+                <p>{{ item.match.home_team }} vs {{ item.match.away_team }}</p>
+                <span class="timeline-meta">Updated {{ item.updated_at }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="empty-state">
+            <h3>No broadcast sessions</h3>
+            <p>Create one from the broadcast hub to start the production slate.</p>
+        </div>
+        {% endif %}
+    </article>
+
+    <article class="surface span-7">
+        <div class="surface-header">
+            <div>
+                <p class="eyebrow">Highlight stream</p>
+                <h2 class="section-heading">Recent edits</h2>
+            </div>
+        </div>
+        {% if recent_highlights %}
+        <div class="media-wall">
+            {% for item in recent_highlights %}
+            <article class="highlight-card">
+                <span class="chip">{{ item.duration|default:'Replay' }}</span>
+                <h3>{{ item.title }}</h3>
+                <p>{{ item.description|default:'Editorial highlight package ready for distribution.' }}</p>
+                <span class="list-meta">{{ item.match.home_team }} vs {{ item.match.away_team }}</span>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <h3>No highlights yet</h3>
+            <p>Published highlight packages will appear here.</p>
+        </div>
+        {% endif %}
+    </article>
+
+    <article class="surface span-12">
+        <div class="surface-header">
+            <div>
+                <p class="eyebrow">Press line</p>
+                <h2 class="section-heading">Recent releases</h2>
+            </div>
+        </div>
+        {% if recent_press %}
+        <div class="media-wall">
+            {% for item in recent_press %}
+            <article class="press-card">
+                <span class="status-badge {% if item.status == 'published' %}live{% else %}scheduled{% endif %}">{{ item.get_status_display }}</span>
+                <h3>{{ item.headline }}</h3>
+                <p>{{ item.body|truncatechars:140 }}</p>
+                <span class="list-meta">{{ item.sport }} | {{ item.created_at }}</span>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <h3>No press releases</h3>
+            <p>Drafts and published releases will show up here.</p>
+        </div>
+        {% endif %}
+    </article>
+</section>
 {% endblock %}
